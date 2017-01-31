@@ -19,6 +19,7 @@ var game = {
 		car.update();
 	},
 
+	// The top-level draw function
 	draw: function(){
 		this.p_ctx.clearRect(0, 0, this.p_ctx.canvas.width, this.p_ctx.canvas.height);
 		car.draw(this.p_ctx);
@@ -42,8 +43,11 @@ var game = {
 
 	},
 
+	// Takes current positon of the car
+	// Returns the correction to velocity to keep on track
 	trackCorrection: function(x, y, px, py){
 		if(x < 100){
+			// left side circle
 			// x = 100, y = 200
 			var nx = x + px;
 			var ny = y + py;
@@ -64,6 +68,7 @@ var game = {
 			return [0, pref_y-(y+py)];
 
 		}else{
+			// right side circle
 			// x = 300, y = 200
 			var nx = x + px;
 			var ny = y + py;
@@ -75,7 +80,9 @@ var game = {
 		return [0,0];
 	},
 
+	// Works out the positons a circle intersescts
 	intersect: function(x0, y0, r0, x1, y1, r1){
+		// C -> JS of code found here.
 		//http://paulbourke.net/geometry/circlesphere/
 		//http://paulbourke.net/geometry/circlesphere/tvoght.c
 		var dx = x1 - x0;
@@ -104,12 +111,15 @@ var game = {
 
 };
 
+// To control the movement of the car.
 var car = {
-	p_x: 100,
+	p_x: 110,
 	p_y: 100,
-	p_px: 10,
-	p_py: 4,
+	p_px: 20,
+	p_py: 0,
+	p_fail: 0,
 
+	// Draws the car and expected position with circle.
 	draw: function(ctx){
 		ctx.fillRect(this.p_x, this.p_y, -10, -5);
 
@@ -121,31 +131,153 @@ var car = {
 		ctx.moveTo(this.p_x, this.p_y);
 		ctx.lineTo(this.p_x + this.p_px, this.p_y + this.p_py);
 		ctx.stroke();
+		control.draw(ctx);
 	},
 
+	// Updates the position of the car
+	// Checks for loss if has to do a large correction.
 	update: function(){
 		this.p_x += this.p_px;
 		this.p_y += this.p_py;
-		this.p_px *= 0.99;
-		this.p_py *= 0.99;
+		this.p_px *= 0.89 + ( Math.random() * 0.05 );
+		this.p_py *= 0.89 + ( Math.random() * 0.05 );
 		var correct = game.trackCorrection(this.p_x , this.p_y, this.p_px, this.p_py);
 		this.p_px += correct[0];// + this.p_x;
 		this.p_py += correct[1];// + this.p_y;
-	//	if(Math.abs(correct[0] + correct[1]) > 5){
-	//		this.p_x = this.p_y = this.p_px = this.p_py = 0;
-	//	}
-		control.update(this.p_x, this.p_y);
+		if(Math.abs(correct[0] + correct[1]) > 5){
+			console.log(correct);
+			console.log("loss");
+			this.p_x = this.p_y = this.p_px = this.p_py = 0;
+			this.p_fail = 1;
+		}
+		//calc the speed
+		var speed = Math.hypot(this.p_px, this.p_py);
+		//returns the amount of power to add
+		var volt = control.update(this.p_x, this.p_y, speed, this.p_fail);
+		//keep in bounds
+		if (volt < 1 || volt > 2){
+			volt = 1;
+		}
+		this.p_px *= volt[0];
+		this.p_py *= volt[1];
+	},
+
+	reset: function(){
+		this.p_x= 110;
+		this.p_y= 100;
+		this.p_px= 20;
+		this.p_py= 0;
+		this.p_fail= 0;
 	},
 
 };
 
+// The part doing the contol.
 var control = {
-	p_volts: 0,
-	p_speed: 0,
-	p_locx: 0,
-	p_locy: 0,
-	update: function(x, y){
+	p_maxspeed: 14,
+	p_maxspeedset: 0,
+	p_startpos: 0,
+	p_startflag: 0,
+	p_startcounter: 0,
 
+	update: function(x, y, speed, fail){
+		this.init(x, y, speed, fail);
+
+		//If under maxspeed adds more speed
+		if (speed < this.p_maxspeed){
+			return [1.1, 1.1];
+		}
+		return [1,1];
+	},
+
+	draw: function(ctx){
+		this.drawbox(this.p_startpos[0], this.p_startpos[1], ctx);
+	},
+	//Draws lines around the area.
+	drawbox: function(x, y, ctx){
+		ctx.beginPath();
+		ctx.moveTo(x + 10, y + 10);
+		ctx.lineTo(x + 10, y - 10);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(x - 10, y - 10);
+		ctx.lineTo(x + 10, y - 10);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(x + 10, y + 10);
+		ctx.lineTo(x - 10, y + 10);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(x - 10, y - 10);
+		ctx.lineTo(x - 10, y + 10);
+		ctx.stroke();
+
+	},
+
+	init: function(x, y, speed, fail){
+		// Check if has start position
+		if(this.p_startpos == 0){
+			this.p_startpos = [x, y];
+		}
+		//updates when passed start line
+		this.updateStartCounter(x, y);
+
+		//keeps going till max speed
+		var maxspeed = this.setmaxspeed(x, y, speed, fail);
+		if(maxspeed[0] != -1){return maxspeed;}
+	},
+
+	setmaxspeed: function(x, y, speed, fail){
+		//Here each time passes start increases the max speed
+		if(this.p_maxspeedset != -1){
+			if(fail == 0){
+				//check if passed start again
+				//if so increase speed max and send around
+				if(this.p_startcounter > this.p_maxspeedset){
+					this.p_maxspeedset = this.p_startcounter;
+					this.p_maxspeed += 0.3;
+				}
+
+				console.log("Max speed:" + this.p_maxspeed);
+				//keeps speed at max whilst going around
+				if(speed < this.p_maxspeed){
+					return [1.1, 1.1];
+				}else{
+					return [1, 1];
+				}
+			}else{
+				//fininsh this part
+				this.p_maxspeedset = -1;
+				//remove one so safe
+				this.p_maxspeed -= 1;
+				//reset the car
+				car.reset();
+				console.log("Final max: " + this.p_maxspeed);
+			}
+		}
+		return [-1];
+
+	},
+
+	updateStartCounter: function(x, y){
+		//startflag - 0 not start, 1 start
+		var flag = this.inBox(x, y, this.p_startpos[0], this.p_startpos[1]);
+		//Checks if leaving box
+		if(this.p_startflag && !flag){
+			this.p_startcounter += 1;
+		}
+		this.p_startflag = flag;
+	},
+
+	//checks if the car is within a certain range.
+	inBox: function(x, y, xflag, yflag){
+		if(x > xflag - 20 && x < xflag + 20 && y > yflag - 20 && y < yflag + 20){
+			return true;
+		}
+		return false;
 	},
 
 };
