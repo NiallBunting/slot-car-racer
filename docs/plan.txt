@@ -1,0 +1,19 @@
+Plan:
+
+Research:
+The best method for individual projects.
+
+Idea
+ Check is on track
+ Detection
+  - OPEN CV
+  Harris for detection - corners
+  sift for features
+  edge detection
+  background subtraction
+  https://www.youtube.com/watch?v=M8B3RZVqgOo
+  https://saravananthirumuruganathan.wordpress.com/2010/04/01/introduction-to-mean-shift-algorithm/
+ Remote usage
+ Speed for various parts of the track
+  Needs to be slow going into the corner and then can speed up
+  Fast as possible on straight parts

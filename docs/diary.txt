@@ -1,0 +1,15 @@
+2017-01-30:
+Got my prject made some first ideas about it.
+Worked on a spike for the control algorithm in CSS
+2017-01-31:
+Went to a meeting with DAP
+  Topics covered:
+    Hardware - aurdino, computer (linux), camera
+      PI + PI cam suggested by DAP however I decided it could add a step and
+      cause lag.
+      Talked about the possible problem if the camera takes too long,
+      can then be used more as a check to make sure speed is correct.
+      Computer is likely to not have much computing power.
+      Diffresnt solutions for tracking - powering each peice of track, having
+      sensors all over the track and using the camera.
+Worked on spike control algorithm
