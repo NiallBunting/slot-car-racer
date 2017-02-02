@@ -13,3 +13,9 @@ Went to a meeting with DAP
       Diffresnt solutions for tracking - powering each peice of track, having
       sensors all over the track and using the camera.
 Worked on spike control algorithm
+2017-02-01
+Tallked to hannah dee about mean shift. She suggested background subtraction
+with colour to match each car.
+2017-02-02
+Worked on spike control algorthim.
+Send an email to dave about hardware.

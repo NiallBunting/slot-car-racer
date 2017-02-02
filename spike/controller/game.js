@@ -1,3 +1,7 @@
+// This is some very messy code, that I have designed just as some spike work
+// for my idea how to control the slot car.
+//
+// I shall clean it up at some point i suppose.
 var game = {
 	p_canvas: 0,
 	p_ctx: 0,
@@ -179,19 +183,65 @@ var control = {
 	p_startpos: 0,
 	p_startflag: 0,
 	p_startcounter: 0,
+	p_pointlist: [],
+	p_lastpos: [0,0],
 
 	update: function(x, y, speed, fail){
-		this.init(x, y, speed, fail);
+		var init = this.init(x, y, speed, fail);
+		if(init[0] != -1){return init;}
 
-		//If under maxspeed adds more speed
-		if (speed < this.p_maxspeed){
-			return [1.1, 1.1];
+		//calculate how many boxes car is in.
+		var riskyplace = 0;
+		for(var i = 0; i < this.p_pointlist.length; i++){
+			if(this.inBox(x, y, this.p_pointlist[i][0], this.p_pointlist[i][1])){riskyplace++;}
 		}
+
+		//what to do if the car has failed.
+		if(fail){
+			this.addfailbox();
+			this.p_startcounter = 0;
+			car.reset();
+		}else{
+			//keep out of box if over 6
+			if(riskyplace < 6){
+				this.p_lastpos = [x, y];
+			}
+		}
+
+		//speed changers
+		console.log(speed + " " + this.p_startcounter);
+		if(riskyplace > 2){
+			if (speed < this.p_maxspeed){
+				return[1.1, 1.1];
+			}else{
+				return [1,1];
+			}
+		}else if(riskyplace > 0){
+			return [1.15, 1.15];
+		}else{
+			return [1.5, 1.5];
+		}
+		
+
 		return [1,1];
 	},
 
+	//Adds a area where the car has fallen off
+	addfailbox: function(){
+		//make sure not adding in the top corner after fail
+		if(this.p_lastpos[0] == 0 || this.p_lastpos[1] == 0){
+			return 0;
+		}
+		this.p_pointlist[this.p_pointlist.length] = this.p_lastpos;
+	},
+
 	draw: function(ctx){
+		ctx.strokeStyle="#FF0000";
 		this.drawbox(this.p_startpos[0], this.p_startpos[1], ctx);
+		ctx.strokeStyle="#000000";
+		for(var i = 0; i < this.p_pointlist.length; i++){
+			this.drawbox(this.p_pointlist[i][0], this.p_pointlist[i][1], ctx);
+		}
 	},
 	//Draws lines around the area.
 	drawbox: function(x, y, ctx){
@@ -227,7 +277,7 @@ var control = {
 
 		//keeps going till max speed
 		var maxspeed = this.setmaxspeed(x, y, speed, fail);
-		if(maxspeed[0] != -1){return maxspeed;}
+		if(maxspeed[0] != -1){return maxspeed;}else{return [-1,0];}
 	},
 
 	setmaxspeed: function(x, y, speed, fail){
@@ -240,7 +290,6 @@ var control = {
 					this.p_maxspeedset = this.p_startcounter;
 					this.p_maxspeed += 0.3;
 				}
-
 				console.log("Max speed:" + this.p_maxspeed);
 				//keeps speed at max whilst going around
 				if(speed < this.p_maxspeed){
