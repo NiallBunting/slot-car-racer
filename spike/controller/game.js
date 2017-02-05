@@ -149,7 +149,6 @@ var car = {
 		this.p_px += correct[0];// + this.p_x;
 		this.p_py += correct[1];// + this.p_y;
 		if(Math.abs(correct[0] + correct[1]) > 5){
-			console.log(correct);
 			console.log("loss");
 			this.p_x = this.p_y = this.p_px = this.p_py = 0;
 			this.p_fail = 1;
@@ -185,6 +184,7 @@ var control = {
 	p_startcounter: 0,
 	p_pointlist: [],
 	p_lastpos: [0,0],
+	p_time: 0,
 
 	update: function(x, y, speed, fail){
 		var init = this.init(x, y, speed, fail);
@@ -208,8 +208,14 @@ var control = {
 			}
 		}
 
+		//Deletes a square every one in a hundred.
+		if(Math.random() > 0.99){
+				this.p_pointlist.splice(Math.round(Math.random() * this.p_pointlist.length), 1);
+				console.log("Deleted one");
+		}
+
 		//speed changers
-		console.log(speed + " " + this.p_startcounter);
+		//console.log(speed + " " + this.p_startcounter);
 		if(riskyplace > 2){
 			if (speed < this.p_maxspeed){
 				return[1.1, 1.1];
@@ -237,14 +243,14 @@ var control = {
 
 	draw: function(ctx){
 		ctx.strokeStyle="#FF0000";
-		this.drawbox(this.p_startpos[0], this.p_startpos[1], ctx);
+		this.drawBox(this.p_startpos[0], this.p_startpos[1], ctx);
 		ctx.strokeStyle="#000000";
 		for(var i = 0; i < this.p_pointlist.length; i++){
-			this.drawbox(this.p_pointlist[i][0], this.p_pointlist[i][1], ctx);
+			this.drawBox(this.p_pointlist[i][0], this.p_pointlist[i][1], ctx);
 		}
 	},
 	//Draws lines around the area.
-	drawbox: function(x, y, ctx){
+	drawBox: function(x, y, ctx){
 		ctx.beginPath();
 		ctx.moveTo(x + 10, y + 10);
 		ctx.lineTo(x + 10, y - 10);
@@ -276,11 +282,11 @@ var control = {
 		this.updateStartCounter(x, y);
 
 		//keeps going till max speed
-		var maxspeed = this.setmaxspeed(x, y, speed, fail);
+		var maxspeed = this.setMaxSpeed(x, y, speed, fail);
 		if(maxspeed[0] != -1){return maxspeed;}else{return [-1,0];}
 	},
 
-	setmaxspeed: function(x, y, speed, fail){
+	setMaxSpeed: function(x, y, speed, fail){
 		//Here each time passes start increases the max speed
 		if(this.p_maxspeedset != -1){
 			if(fail == 0){
@@ -290,7 +296,6 @@ var control = {
 					this.p_maxspeedset = this.p_startcounter;
 					this.p_maxspeed += 0.3;
 				}
-				console.log("Max speed:" + this.p_maxspeed);
 				//keeps speed at max whilst going around
 				if(speed < this.p_maxspeed){
 					return [1.1, 1.1];
@@ -317,6 +322,12 @@ var control = {
 		//Checks if leaving box
 		if(this.p_startflag && !flag){
 			this.p_startcounter += 1;
+			//If not first lap show laptime.
+			if(this.p_startcounter > 1){
+				console.log("Lap time: " + (Date.now() - this.p_time));
+			}
+			//Reset the counter for the laptime.
+			this.p_time = Date.now();
 		}
 		this.p_startflag = flag;
 	},

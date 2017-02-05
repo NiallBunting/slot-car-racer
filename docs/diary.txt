@@ -19,3 +19,15 @@ with colour to match each car.
 2017-02-02
 Worked on spike control algorthim.
 Send an email to dave about hardware.
+2017-02-05
+Replied to dave about just jusing a usb camera for now
+Worked on spike game.
+  Watching performance of the slot car spike work it showed that the car
+  could wildly variate in lap times depending on how many had been deleted.
+  It would often delete many squares leading to a speed up but then the car
+  would start to fall off many times that it otherwise would not.
+  However, the car could get upto a 150ms speed inrease using this
+  algorithm. The speed that car could stay on the track would give lap times
+  of 950ms. The algorithm could get that down to 799.
+  It suggests that it may take the best of the layouts of the car and stick to
+  that.
