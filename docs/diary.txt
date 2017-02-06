@@ -31,3 +31,5 @@ Worked on spike game.
   of 950ms. The algorithm could get that down to 799.
   It suggests that it may take the best of the layouts of the car and stick to
   that.
+2017-02-06
+Spike update. Added boxes placed at start.

@@ -185,6 +185,7 @@ var control = {
 	p_pointlist: [],
 	p_lastpos: [0,0],
 	p_time: 0,
+	p_deleterate: 0.99,
 
 	update: function(x, y, speed, fail){
 		var init = this.init(x, y, speed, fail);
@@ -198,7 +199,7 @@ var control = {
 
 		//what to do if the car has failed.
 		if(fail){
-			this.addfailbox();
+			this.addFailBox();
 			this.p_startcounter = 0;
 			car.reset();
 		}else{
@@ -209,7 +210,7 @@ var control = {
 		}
 
 		//Deletes a square every one in a hundred.
-		if(Math.random() > 0.99){
+		if(Math.random() > this.p_deleterate){
 				this.p_pointlist.splice(Math.round(Math.random() * this.p_pointlist.length), 1);
 				console.log("Deleted one");
 		}
@@ -233,7 +234,7 @@ var control = {
 	},
 
 	//Adds a area where the car has fallen off
-	addfailbox: function(){
+	addFailBox: function(){
 		//make sure not adding in the top corner after fail
 		if(this.p_lastpos[0] == 0 || this.p_lastpos[1] == 0){
 			return 0;
@@ -284,11 +285,16 @@ var control = {
 		//keeps going till max speed
 		var maxspeed = this.setMaxSpeed(x, y, speed, fail);
 		if(maxspeed[0] != -1){return maxspeed;}else{return [-1,0];}
+
 	},
 
 	setMaxSpeed: function(x, y, speed, fail){
 		//Here each time passes start increases the max speed
 		if(this.p_maxspeedset != -1){
+			// add fail box so don't have to do so much checking
+			this.p_lastpos = [x, y];
+			this.addFailBox();
+
 			if(fail == 0){
 				//check if passed start again
 				//if so increase speed max and send around
