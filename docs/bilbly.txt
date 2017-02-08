@@ -1,0 +1,23 @@
+Bibliography
+
+2017-02-05
+http://www.hdvideopro.com/columns/help-desk/formats-explained/
+Difference between raw log and uncompressed video.
+
+
+Creating images from image stream in c#
+
+
+
+This is getting a understanding of how to work with video files.
+
+2017-02-08
+
+http://stackoverflow.com/questions/5899444/how-to-read-avi-files-c
+
+http://stackoverflow.com/questions/3770939/simple-frame-by-frame-video-decoder-library
+
+http://docs.opencv.org/3.1.0/d1/dc5/tutorial_background_subtraction.html
+http://stackoverflow.com/questions/33266239/differences-between-mog-mog2-and-gmg
+
+http://homepages.inf.ed.ac.uk/rbf/HIPR2/gsmooth.htm
