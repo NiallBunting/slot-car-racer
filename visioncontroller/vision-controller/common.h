@@ -17,8 +17,8 @@
 #include <iostream>
 using namespace std;
 
-const static int IMAGEX = 3;
-const static int IMAGEY = 3;
+const static int IMAGEX = 640;
+const static int IMAGEY = 480;
 
 #endif /* COMMON_H */
 

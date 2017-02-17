@@ -35,6 +35,7 @@ public:
 private:
     BackgroundPixel* background[IMAGEX][IMAGEY];
     int boundCheck(int x, int y, int value);
+    int boundCheck(int x, int y, int value, float threashold);
 };
 
 #endif /* BACKGROUNDSUBTRACTION_H */

@@ -79,12 +79,16 @@ Image* Backgroundsubtraction::doFullBackSubtract(Image* img){
 //0 same
 // 1 higher
 int Backgroundsubtraction::boundCheck(int x, int y, int value){
+    return this->boundCheck(x, y, value, 0.2f);
+}
+
+int Backgroundsubtraction::boundCheck(int x, int y, int value, float threshold){
     // if lower than add as the low boundary
-    if(value < this->background[x][y]->low){
+    if(value < (this->background[x][y]->low * (1.0f-threshold))){
         return -1;
     }
     // if higher add as the high boundary
-    if(value > this->background[x][y]->high){
+    if(value > (this->background[x][y]->high * (1.0f+threshold))){
         return 1;
     }
     return 0;

@@ -65,7 +65,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-Wl,-rpath,/usr/include/opencv2 `pkg-config --libs opencv`  
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -78,22 +78,22 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/vision-controller: ${OBJECTFILES}
 ${OBJECTDIR}/backgroundsubtraction.o: backgroundsubtraction.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
 
 ${OBJECTDIR}/gaussian.o: gaussian.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian.o gaussian.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian.o gaussian.cpp
 
 ${OBJECTDIR}/image.o: image.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image.o image.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image.o image.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:
@@ -110,7 +110,7 @@ ${TESTDIR}/TestFiles/f1: ${TESTDIR}/backgroundsubtractiontest.o ${OBJECTFILES:%.
 ${TESTDIR}/backgroundsubtractiontest.o: backgroundsubtractiontest.cpp 
 	${MKDIR} -p ${TESTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I. -MMD -MP -MF "$@.d" -o ${TESTDIR}/backgroundsubtractiontest.o backgroundsubtractiontest.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 -I. `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${TESTDIR}/backgroundsubtractiontest.o backgroundsubtractiontest.cpp
 
 
 ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp 
@@ -121,7 +121,7 @@ ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/backgroundsubtraction.o ${OBJECTDIR}/backgroundsubtraction_nomain.o;\
 	fi
@@ -134,7 +134,7 @@ ${OBJECTDIR}/gaussian_nomain.o: ${OBJECTDIR}/gaussian.o gaussian.cpp
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian_nomain.o gaussian.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian_nomain.o gaussian.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/gaussian.o ${OBJECTDIR}/gaussian_nomain.o;\
 	fi
@@ -147,7 +147,7 @@ ${OBJECTDIR}/image_nomain.o: ${OBJECTDIR}/image.o image.cpp
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image_nomain.o image.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image_nomain.o image.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/image.o ${OBJECTDIR}/image_nomain.o;\
 	fi
@@ -160,7 +160,7 @@ ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main.o ${OBJECTDIR}/main_nomain.o;\
 	fi

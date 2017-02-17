@@ -49,6 +49,19 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/opencv2</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <linkerDynSerch>
+            <pElem>/usr/include/opencv2</pElem>
+          </linkerDynSerch>
+          <linkerLibItems>
+            <linkerOptionItem>`pkg-config --libs opencv`</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
       <item path="backgroundsubtraction.cpp" ex="false" tool="1" flavor2="0">
       </item>
