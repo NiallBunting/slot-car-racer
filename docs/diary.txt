@@ -44,3 +44,10 @@ as it has to scrub over the image.
 Not sure how to the colour part yet as it should just detect the two largest
 blobs.
 Completed the intitial project specification.
+2017-02-14
+opencv vs ffmpeg - opencv looks easier to use. Use at the start.
+A timiming beam to find out the delay between the camera and car
+also opens up the possiblity of dead reckoning.
+02-17
+Got background subtraction working.
+Now need to focus on colour correction.

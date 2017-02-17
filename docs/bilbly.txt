@@ -21,3 +21,21 @@ http://docs.opencv.org/3.1.0/d1/dc5/tutorial_background_subtraction.html
 http://stackoverflow.com/questions/33266239/differences-between-mog-mog2-and-gmg
 
 http://homepages.inf.ed.ac.uk/rbf/HIPR2/gsmooth.htm
+
+
+2017-02-14
+
+http://opencv.org/downloads.html
+open cv download
+
+using netbeans and ubuntu
+https://thefreecoder.wordpress.com/2012/09/10/use-netbeans-to-work-with-opencv-on-ubuntuand-linux-mint-and-other-distros-too/
+
+http://stackoverflow.com/questions/14833553/reading-a-video-with-opencv!!!
+used to open a video with opencv
+
+http://stackoverflow.com/questions/8932893/accessing-certain-pixel-rgb-value-in-opencv access certain pixel
+
+2017-02-17
+http://stackoverflow.com/questions/23001512/c-and-opencv-get-and-set-pixel-color-to-mat
+http://docs.opencv.org/2.4/doc/user_guide/ug_mat.html

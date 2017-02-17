@@ -17,3 +17,52 @@ Idea
  Speed for various parts of the track
   Needs to be slow going into the corner and then can speed up
   Fast as possible on straight parts
+
+
+
+
+
+
+
+
+30-JAN
+Planning Week
+Planning project and getting intial overview of the project.
+
+-
+
+06-FEB
+Research + spike
+Here I was doing reasearch into various methods that were used. Spike work into a control was written in js.
+13-02
+Implement Background subtraction
+Here I should have a decent working version of background subtraction.
+20-02
+Implement colour detection
+This should then be able to detect the colour of the car and track it around the track.
+27-02
+More image stuff.
+
+-
+
+06-MAR
+Get basic values from the image.
+13-03 - MID PROJECT DEMONSTRATION
+Implement what was done in spike.
+20-03
+Testing and improvements.
+27-03
+Controller work.
+-
+
+03-APR
+Bring things togther.
+10-04
+Drop some of the more spikish work.
+17-04
+24-04
+
+-
+
+1-MAY
+8-05 - DEMONSTRATION
