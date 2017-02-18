@@ -39,3 +39,12 @@ http://stackoverflow.com/questions/8932893/accessing-certain-pixel-rgb-value-in-
 2017-02-17
 http://stackoverflow.com/questions/23001512/c-and-opencv-get-and-set-pixel-color-to-mat
 http://docs.opencv.org/2.4/doc/user_guide/ug_mat.html
+
+2017-02-18
+http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
+
+http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
+Chi-squared test
+
+https://engineering.ucsb.edu/~cse/Files/distributiondistance042.pdf
+PAPER- compare two histogram
