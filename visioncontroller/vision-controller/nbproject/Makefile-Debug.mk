@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/backgroundsubtraction.o \
+	${OBJECTDIR}/colordetector.o \
 	${OBJECTDIR}/gaussian.o \
 	${OBJECTDIR}/image.o \
 	${OBJECTDIR}/main.o
@@ -79,6 +80,11 @@ ${OBJECTDIR}/backgroundsubtraction.o: backgroundsubtraction.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
+
+${OBJECTDIR}/colordetector.o: colordetector.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector.o colordetector.cpp
 
 ${OBJECTDIR}/gaussian.o: gaussian.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -124,6 +130,19 @@ ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.
 	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/backgroundsubtraction.o ${OBJECTDIR}/backgroundsubtraction_nomain.o;\
+	fi
+
+${OBJECTDIR}/colordetector_nomain.o: ${OBJECTDIR}/colordetector.o colordetector.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/colordetector.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector_nomain.o colordetector.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/colordetector.o ${OBJECTDIR}/colordetector_nomain.o;\
 	fi
 
 ${OBJECTDIR}/gaussian_nomain.o: ${OBJECTDIR}/gaussian.o gaussian.cpp 

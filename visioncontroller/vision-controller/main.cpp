@@ -53,6 +53,24 @@ int main(int argc, char** argv) {
 
 #include <iostream>
 
+int selx1, sely1, selx2, sely2 = 0;
+
+void CallBackFunc(int event, int x, int y, int flags, void* userdata){
+    if  ( event == cv::EVENT_LBUTTONDOWN )
+    {
+        cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+        if(selx1 == 0){
+            selx1 = x;
+            sely1 = y;
+        }else if(selx2 == 0){
+            selx2 = x;
+            sely2 = y;
+        }
+    }
+}
+
+
+
 int main(int argc, char* argv[])
 {
     //http://stackoverflow.com/questions/14833553/reading-a-video-with-opencv
@@ -66,9 +84,12 @@ int main(int argc, char* argv[])
 
     cv::Mat frame;
     cv::Mat out;
+    cv::Mat learnframe;
     Image* img = new Image();
     Image* subtract;
+    Image* colimg = new Image();
     Backgroundsubtraction* bs = new Backgroundsubtraction();
+    Colordetector* cd = new Colordetector();
     
     int train = 0;
     
@@ -79,14 +100,16 @@ int main(int argc, char* argv[])
         
         //This leads to some weirdness of three repeated images.
         //cvtColor(out, out, CV_BGR2GRAY);   
+        cvtColor(frame, out, cv::COLOR_BGR2HLS);
         
-        GaussianBlur(frame, out, cv::Size(7,7), 1.5, 1.5);
+        GaussianBlur(out, out, cv::Size(7,7), 1.5, 1.5);
         
         for(int x = 0; x < frame.cols; x++){
             for(int y = 0; y < frame.rows; y++){
                 cv::Vec3b color = out.at<cv::Vec3b>(cv::Point(x,y));
                 //Takes an average currently, needs changing.
-                int c = (color[0] + color[1] + color[2])/3.0;
+                //int c = (color[0] + color[1] + color[2])/3.0;
+                int c = color[1];
                 img->updatePixel(x, y, c);
             }
         }
@@ -94,33 +117,92 @@ int main(int argc, char* argv[])
         if (train == 0){
             bs->trainBackground(img);
         }else if(train == 1){
-            //learn track
+            Image* subtract = bs->maskAdd(img);
+            
+            for(int x = 0; x < frame.cols; x++){
+                for(int y = 0; y < frame.rows; y++){
+                        cv::Vec3b color = frame.at<cv::Vec3b>(cv::Point(x,y));
+                        color[0] = subtract->getPixel(x,y);
+                        color[1] = subtract->getPixel(x,y);
+                        color[2] = subtract->getPixel(x,y);
+                        frame.at<cv::Vec3b>(cv::Point(x,y)) = color;
+                }
+            }
+            
+            delete subtract;
+
         }
-        else{
-            //Does subtraction and sets all pixels to black.
+        else if (train == 2){
+            train = 3;
+            learnframe = out.clone();
+            cv::imshow("Select car", learnframe);
+            cv::setMouseCallback("Select car", CallBackFunc, NULL);
+
+        }else if (train == 3){
+            if(sely2 != 0){
+                cv::rectangle(
+                learnframe,
+                 cv::Point(selx1, sely1),
+                 cv::Point(selx2, sely2),
+                 cv::Scalar(0, 255, 255)
+                );
+                cv::imshow("Select car", learnframe);
+                train = 4;
+                
+                for(int x = 0; x < frame.cols; x++){
+                    for(int y = 0; y < frame.rows; y++){
+                        cv::Vec3b color = learnframe.at<cv::Vec3b>(cv::Point(x,y));
+                        //Takes an average currently, needs changing.
+                        //int c = (color[0] + color[1] + color[2])/3.0;
+                        int c = color[0];
+                        colimg->updatePixel(x, y, c);
+                    }
+                }
+                
+                cd->learnColor(colimg, selx1, selx2, sely1, sely2);
+                
+            }
+        }else{
+            //Then just do tracking
             Image* subtract = bs->doFullBackSubtract(img);
             for(int x = 0; x < frame.cols; x++){
                 for(int y = 0; y < frame.rows; y++){
+                    cv::Vec3b color = frame.at<cv::Vec3b>(cv::Point(x,y));
                     if(subtract->getPixel(x,y) == 0){
-                        cv::Vec3b color = frame.at<cv::Vec3b>(cv::Point(x,y));
                         color[0] = 0;
                         color[1] = 0;
                         color[2] = 0;
                         frame.at<cv::Vec3b>(cv::Point(x,y)) = color;
+                    }else{
+                        subtract->updatePixel(x, y, color[0]);
                     }
                 }
             }
+            
+            for(int x = 5; x < frame.cols; x+=10){
+                for(int y = 5; y < frame.rows; y+=10){
+                    if(subtract->getPixel(x,y) == 0){continue;}
+                    std::cout << "Match: " << cd->matchColor(subtract, x, x+9, y, y+9) << std::endl;
+                        if(cd->matchColor(subtract, x, x+9, y, y+9) > 1.4){
+                            cv::rectangle(
+                            frame,
+                            cv::Point(x, y),
+                            cv::Point(x+9, y+9),
+                            cv::Scalar(0, 255, 255)
+                            );                            
+                        }
+                }
+            }
+            
+            
+            
+
             
             
             delete subtract;
         }
         
-        cv::rectangle(
-        frame,
-        cv::Point(5, 10),
-        cv::Point(20, 30),
-        cv::Scalar(0, 255, 255)
-        );
+       
 
         
         cv::imshow("window", frame);
@@ -139,13 +221,20 @@ int main(int argc, char* argv[])
         if (key == 27){ // ESC
             break;
         }
+        //48 is 0
+        if (key == 48){ //0
+            train = 0;
+        }
         if (key == 49){ //1
             train = 1;
             std::cout << "Background Train Finished." << std::endl;
         }
-        //49 is 1
         if (key == 50){ //2
             train = 2;
+            std::cout << "Lap finished." << std::endl;
+        }
+        if (key == 51){ //3
+            train = 4;
             std::cout << "Lap finished." << std::endl;
         }
     }
