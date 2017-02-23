@@ -20,6 +20,7 @@
 struct BackgroundPixel{
     int high;
     int low;
+    int mask;
 };
 
 class Backgroundsubtraction {
@@ -32,6 +33,7 @@ public:
     //Spread only checks the value every so many pixels
     //and only then fills in between the pixels if match
     Image* doSparseBackSubtract(Image* img, int spread);
+    Image* maskAdd(Image* img);
 private:
     BackgroundPixel* background[IMAGEX][IMAGEY];
     int boundCheck(int x, int y, int value);

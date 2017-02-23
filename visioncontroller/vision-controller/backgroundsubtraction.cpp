@@ -19,6 +19,7 @@ Backgroundsubtraction::Backgroundsubtraction() {
             BackgroundPixel* bp = new BackgroundPixel;
             bp->high = -1;
             bp->low = -1;
+            bp->mask = 0;
             this->background[i][j] = bp;
         }
     }
@@ -57,11 +58,15 @@ Image* Backgroundsubtraction::doSparseBackSubtract(Image* img, int sparse){
 }
 
 //set to one if out of bounds
+//returns 0 when no change
 Image* Backgroundsubtraction::doFullBackSubtract(Image* img){
     Image* bsimg = new Image();
     
     for(int i = 0; i < IMAGEX; i++){
         for(int j = 0; j < IMAGEY; j++){
+            if(this->background[i][j]->mask == 0){
+                continue;
+            }
             
             //checks within limits
             if(this->boundCheck(i, j, img->getPixel(i, j)) != 0){
@@ -92,4 +97,57 @@ int Backgroundsubtraction::boundCheck(int x, int y, int value, float threshold){
         return 1;
     }
     return 0;
+}
+
+//Finds large blobs and adds them to the mask.
+Image* Backgroundsubtraction::maskAdd(Image* img){
+    int size = 2;
+    Image* bsimg = new Image();
+
+    //loop through each pixel
+    for(int i = size; i < IMAGEX - size; i++){
+        for(int j = size; j < IMAGEY - size; j++){ 
+            
+            if(this->background[i][j]->mask == 1){
+                bsimg->updatePixel(i, j, 255);
+                continue;
+            }
+            
+            //pass on 0 at end of tests.
+            int test = 0;
+            
+            //check actual pixel first
+            if(this->boundCheck(i, j, img->getPixel(i, j)) == 0){
+               test = 1;
+               continue;
+            }
+            
+            //test in x direction
+            for(int q = i - size; q < i + size; q++){
+                //test if outside boundary
+                if(this->boundCheck(q,j, img->getPixel(q,j)) == 0){
+                    test = 1;
+                    continue;
+                }
+            }
+
+            //test in y direction
+            for(int q = j - size; q < j + size; q++){
+                //test if outside boundary
+                if(this->boundCheck(i,q, img->getPixel(i,q)) == 0){
+                    test = 1;
+                    continue;
+                }
+            }
+            
+            if(test == 0){
+                //test passed
+                this->background[i][j]->mask = 1;
+                bsimg->updatePixel(i, j, 255);
+            }
+        }
+    }
+    
+    
+    return bsimg;
 }
