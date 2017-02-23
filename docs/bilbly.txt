@@ -48,3 +48,14 @@ Chi-squared test
 
 https://engineering.ucsb.edu/~cse/Files/distributiondistance042.pdf
 PAPER- compare two histogram
+
+http://opencvexamples.blogspot.com/2014/01/detect-mouse-clicks-and-moves-on-image.html
+Mouse clicks
+
+20-02-2017
+http://www.cse.psu.edu/~rtc12/CSE598G/introMeanShift.pdf
+Mean shift
+
+Face Description with Local Binary Patterns: Application to Face Recognition. 2004
+PAPER
+Contained chisquare - http://stats.stackexchange.com/questions/184101/comparing-two-histograms-using-chi-square-distance

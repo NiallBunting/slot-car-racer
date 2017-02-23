@@ -1,0 +1,27 @@
+Protocol to talk to hardware:
+
+The hardware should recieve commands made of two bytes. The first byte should be the
+letter that represents a track. The second should represent the speed for the car to go
+(0-255). This should allow the computer to control the cars to a reasonable degree of
+accuracy whilst keeping the overhead as low as possible.
+
+Eg:
+B255 - Car B full speed.
+M0 - Car M stop.
+
+Protocol to talk to computer:
+
+The information the hardware has to return is the speed through the speed trap and the current
+draw by each track. This should also follow the two byte format.
+
+For the speed it should be made up of the car number and the amount of milliseconds it takes.
+B81 - Car B 81 milliseconds.
+M40 - Car M 40 milliseconds.
+
+
+NOT SURE ABOUT THIS YET.
+The hardware should return values when the current draw hits 0. This depends upon how often this happens,
+if this can indicate the car is off the track. Or how fast the car is going.
+
+b0 - Car B off the track.
+m0 - Car M off the track.
