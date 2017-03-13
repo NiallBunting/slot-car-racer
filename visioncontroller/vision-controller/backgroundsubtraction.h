@@ -14,8 +14,7 @@
 #ifndef BACKGROUNDSUBTRACTION_H
 #define BACKGROUNDSUBTRACTION_H
 
-#include "image.h"
-#include "common.h"
+#include <cv.h>
 
 struct BackgroundPixel{
     int high;
@@ -23,22 +22,19 @@ struct BackgroundPixel{
     int mask;
 };
 
+
 class Backgroundsubtraction {
 public:
     Backgroundsubtraction();
-    //Trains the backround on the images.
-    int trainBackground(Image* img);
-    //This checks each pixel if within bounds.
-    Image* doFullBackSubtract(Image* img);
-    //Spread only checks the value every so many pixels
-    //and only then fills in between the pixels if match
-    Image* doSparseBackSubtract(Image* img, int spread);
-    Image* maskAdd(Image* img);
+    int init(int cols, int rows);
+    int hasPixelChanged(int x, int y, int value);
+    //Trains the background on the images.
+    int trainBackground(cv::Mat& frame, int value);
+    int maskCreate(cv::Mat& frame);
 private:
-    BackgroundPixel* background[IMAGEX][IMAGEY];
-    int boundCheck(int x, int y, int value);
-    int boundCheck(int x, int y, int value, float threashold);
+    int cols;
+    int rows;
+    BackgroundPixel* background;
 };
 
 #endif /* BACKGROUNDSUBTRACTION_H */
-

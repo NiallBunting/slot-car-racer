@@ -14,10 +14,5 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "image.h"
-#include "backgroundsubtraction.h"
-#include "colordetector.h"
-
-
 #endif /* MAIN_H */
 

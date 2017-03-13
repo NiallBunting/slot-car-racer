@@ -37,9 +37,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/backgroundsubtraction.o \
 	${OBJECTDIR}/colordetector.o \
-	${OBJECTDIR}/gaussian.o \
-	${OBJECTDIR}/image.o \
-	${OBJECTDIR}/main.o
+	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/slotmanager.o
 
 # Test Directory
 TESTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tests
@@ -86,20 +85,15 @@ ${OBJECTDIR}/colordetector.o: colordetector.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector.o colordetector.cpp
 
-${OBJECTDIR}/gaussian.o: gaussian.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian.o gaussian.cpp
-
-${OBJECTDIR}/image.o: image.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image.o image.cpp
-
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/slotmanager.o: slotmanager.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager.o slotmanager.cpp
 
 # Subprojects
 .build-subprojects:
@@ -145,32 +139,6 @@ ${OBJECTDIR}/colordetector_nomain.o: ${OBJECTDIR}/colordetector.o colordetector.
 	    ${CP} ${OBJECTDIR}/colordetector.o ${OBJECTDIR}/colordetector_nomain.o;\
 	fi
 
-${OBJECTDIR}/gaussian_nomain.o: ${OBJECTDIR}/gaussian.o gaussian.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	@NMOUTPUT=`${NM} ${OBJECTDIR}/gaussian.o`; \
-	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
-	then  \
-	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gaussian_nomain.o gaussian.cpp;\
-	else  \
-	    ${CP} ${OBJECTDIR}/gaussian.o ${OBJECTDIR}/gaussian_nomain.o;\
-	fi
-
-${OBJECTDIR}/image_nomain.o: ${OBJECTDIR}/image.o image.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	@NMOUTPUT=`${NM} ${OBJECTDIR}/image.o`; \
-	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
-	then  \
-	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/image_nomain.o image.cpp;\
-	else  \
-	    ${CP} ${OBJECTDIR}/image.o ${OBJECTDIR}/image_nomain.o;\
-	fi
-
 ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	@NMOUTPUT=`${NM} ${OBJECTDIR}/main.o`; \
@@ -182,6 +150,19 @@ ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp
 	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main.o ${OBJECTDIR}/main_nomain.o;\
+	fi
+
+${OBJECTDIR}/slotmanager_nomain.o: ${OBJECTDIR}/slotmanager.o slotmanager.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/slotmanager.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager_nomain.o slotmanager.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/slotmanager.o ${OBJECTDIR}/slotmanager_nomain.o;\
 	fi
 
 # Run Test Targets

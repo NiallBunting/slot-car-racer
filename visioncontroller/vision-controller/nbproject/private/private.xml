@@ -9,9 +9,11 @@
         <group>
             <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/image.cpp</file>
             <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/colordetector.h</file>
+            <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/common.h</file>
             <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/main.h</file>
             <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/colordetector.cpp</file>
             <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/main.cpp</file>
+            <file>file:/aber/nib28/NetBeansProjects/slot-car-racer/visioncontroller/vision-controller/backgroundsubtraction.cpp</file>
         </group>
     </open-files>
 </project-private>

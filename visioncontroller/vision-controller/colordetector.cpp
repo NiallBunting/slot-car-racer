@@ -13,72 +13,72 @@
 
 #include "colordetector.h"
 
-Colordetector::Colordetector() {
-    //this->distribution[51];
-    //this->temp[51];
-    
-    this->binNum = 51; 
-     
-    for(int i = 0; i < this->binNum; i++){
-        this->distribution[i] = (double)0;
-    }
-         
+const int COLORCHANNEL = 0;
+
+Colordetector::Colordetector() {         
 }
 
-
-int Colordetector::learnColor(Image* img, int x1, int x2, int y1, int y2){
-    this->createDistribution(img, x1, x2, y1, y2);
-    for(int i = 0; i < this->binNum; i++){
+//Learns the colours selected.
+int Colordetector::learnColor(cv::Mat& frame, int x1, int x2, int y1, int y2){
+    this->createDistribution(frame, x1, x2, y1, y2);
+    
+    for(int i = 0; i < BINCOUNT; i++){
         this->distribution[i] = this->temp[i];
     }
     
-    return 0;
+    for(int x = 0; x < frame.cols; x++){
+        for(int y = 0; y < frame.rows; y++){
+               cv::Vec3b color = frame.at<cv::Vec3b>(cv::Point(x,y));
+
+               int colval = color.val[COLORCHANNEL];
+
+               color.val[0] = colval;
+               color.val[1] = colval;
+               color.val[2] = colval;  
+
+               frame.at<cv::Vec3b>(cv::Point(x,y)) = color;   
+        }
+    }
+
 }
 
-double Colordetector::matchColor(Image* img, int x1, int x2, int y1, int y2){
-    if(this->createDistribution(img, x1, x2, y1, y2) == 1){
-        return 0;
+//Matches the colours to the previous selected colours.
+//Compares with chi squared.
+// Lower values are better.
+double Colordetector::matchColor(cv::Mat& frame, int x1, int x2, int y1, int y2){
+    if(this->createDistribution(frame, x1, x2, y1, y2) == 1){
+        return 5.0;
     }
     
     double match = 0.0;
-    for(int i = 0; i < this->binNum; i++){
+    
+    for(int i = 0; i < BINCOUNT; i++){
         if(this->distribution[i] == 0 && this->temp[i] == 0){continue;}
-        match += ((this->distribution[i] - this->temp[i]) * (this->distribution[i] - this->temp[i])) / (this->distribution[i] + this->temp[i]);
+        match += ((this->temp[i] - this->distribution[i]) * (this->temp[i] - this->distribution[i])) / (this->distribution[i] + this->temp[i]);
     }
     
     return match;
 }
 
-int Colordetector::createDistribution(Image* img, int x1, int x2, int y1, int y2){
-    
-    int count[this->binNum];
-    int zerocheck = 0;
-    
-    for(int i = 0; i < this->binNum; i++){
-        this->temp[i] = 0.0;
-        count[i] = 0;
-    }
+//Creates the distribution and sorts into bins.
+int Colordetector::createDistribution(cv::Mat& frame, int x1, int x2, int y1, int y2){
+    int count[BINCOUNT];
+    for(int i = 0; i < BINCOUNT; i++){count[i] = 0;}
     
     int area = (x1 - x2) * (y1 - y2);
     
+    cv::Vec3b color;
+    
     for(int x = x1; x < x2; x++){
         for(int y = y1; y < y2; y++){
-            if(img->getPixel(x, y) == 0){
-                zerocheck++;
-                continue;
-            }
-            count[img->getPixel(x, y)/5]++;
-            //std::cout << "hello: " << count[img->getPixel(x, y)/5] << std::endl;
+            color = frame.at<cv::Vec3b>(cv::Point(x,y));
+            
+            count[color.val[COLORCHANNEL] / 5]++;
         }
     }
     
-    if(zerocheck > (area / 4)){
-        return 1;
-    }
-    
-    for(int i = 0; i < this->binNum; i++){
+    for(int i = 0; i < BINCOUNT; i++){
         this->temp[i] = (double)count[i] / (double)area;
-        //std::cout << "| i:" << i << ",count:" << count[i] << ",temp:" << this->temp[i] << std::endl;
     }
     
     return 0;
