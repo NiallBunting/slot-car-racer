@@ -34,7 +34,7 @@ int Backgroundsubtraction::init(int cols, int rows) {
 
 // This trains the background by increasing the min and max values for 
 // a given pixel.
-int Backgroundsubtraction::trainBackground(cv::Mat& frame, int value){
+int Backgroundsubtraction::trainBackground(cv::Mat& frame){
     
     int x = 0;
     int y = 0;
@@ -118,4 +118,9 @@ int Backgroundsubtraction::hasPixelChanged(int x, int y, int value){
     }else{
         return 0;
     }
+}
+
+int Backgroundsubtraction::hasPixelChanged(int x, int y, cv::Mat& frame){
+        int color = frame.at<cv::Vec3b>(cv::Point(x,y)).val[COLORCHANNEL];
+        return this->hasPixelChanged(x, y, color);
 }

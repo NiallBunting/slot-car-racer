@@ -5,6 +5,7 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>backgroundsubtraction.h</itemPath>
+      <itemPath>carcontroller.h</itemPath>
       <itemPath>colordetector.h</itemPath>
       <itemPath>main.h</itemPath>
       <itemPath>slotmanager.h</itemPath>
@@ -17,6 +18,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>backgroundsubtraction.cpp</itemPath>
+      <itemPath>carcontroller.cpp</itemPath>
       <itemPath>colordetector.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>slotmanager.cpp</itemPath>
@@ -30,6 +32,12 @@
                      projectFiles="true"
                      kind="TEST">
         <itemPath>backgroundsubtractiontest.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2"
+                     displayName="colourdetectortest"
+                     projectFiles="true"
+                     kind="TEST">
+        <itemPath>tests/colordetectortest.cpp</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -68,6 +76,10 @@
       </item>
       <item path="backgroundsubtractiontest.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="carcontroller.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="carcontroller.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="colordetector.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="colordetector.h" ex="false" tool="3" flavor2="0">
@@ -87,6 +99,21 @@
           <output>${TESTDIR}/TestFiles/f1</output>
         </linkerTool>
       </folder>
+      <folder path="TestFiles/f2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f2</output>
+        </linkerTool>
+      </folder>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main.h" ex="false" tool="3" flavor2="0">
@@ -94,6 +121,8 @@
       <item path="slotmanager.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="slotmanager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tests/colordetectortest.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -122,6 +151,10 @@
       </item>
       <item path="backgroundsubtractiontest.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="carcontroller.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="carcontroller.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="colordetector.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="colordetector.h" ex="false" tool="3" flavor2="0">
@@ -141,6 +174,21 @@
           <output>${TESTDIR}/TestFiles/f1</output>
         </linkerTool>
       </folder>
+      <folder path="TestFiles/f2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f2</output>
+        </linkerTool>
+      </folder>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="main.h" ex="false" tool="3" flavor2="0">
@@ -148,6 +196,8 @@
       <item path="slotmanager.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="slotmanager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tests/colordetectortest.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

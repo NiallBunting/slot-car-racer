@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/backgroundsubtraction.o \
+	${OBJECTDIR}/carcontroller.o \
 	${OBJECTDIR}/colordetector.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/slotmanager.o
@@ -45,11 +46,13 @@ TESTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tests
 
 # Test Files
 TESTFILES= \
-	${TESTDIR}/TestFiles/f1
+	${TESTDIR}/TestFiles/f1 \
+	${TESTDIR}/TestFiles/f2
 
 # Test Object Files
 TESTOBJECTFILES= \
-	${TESTDIR}/backgroundsubtractiontest.o
+	${TESTDIR}/backgroundsubtractiontest.o \
+	${TESTDIR}/tests/colordetectortest.o
 
 # C Compiler Flags
 CFLAGS=
@@ -80,6 +83,11 @@ ${OBJECTDIR}/backgroundsubtraction.o: backgroundsubtraction.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
 
+${OBJECTDIR}/carcontroller.o: carcontroller.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller.o carcontroller.cpp
+
 ${OBJECTDIR}/colordetector.o: colordetector.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -106,11 +114,21 @@ ${TESTDIR}/TestFiles/f1: ${TESTDIR}/backgroundsubtractiontest.o ${OBJECTFILES:%.
 	${MKDIR} -p ${TESTDIR}/TestFiles
 	${LINK.cc}   -o ${TESTDIR}/TestFiles/f1 $^ ${LDLIBSOPTIONS} 
 
+${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/colordetectortest.o ${OBJECTFILES:%.o=%_nomain.o}
+	${MKDIR} -p ${TESTDIR}/TestFiles
+	${LINK.cc}   -o ${TESTDIR}/TestFiles/f2 $^ ${LDLIBSOPTIONS} 
+
 
 ${TESTDIR}/backgroundsubtractiontest.o: backgroundsubtractiontest.cpp 
 	${MKDIR} -p ${TESTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${TESTDIR}/backgroundsubtractiontest.o backgroundsubtractiontest.cpp
+
+
+${TESTDIR}/tests/colordetectortest.o: tests/colordetectortest.cpp 
+	${MKDIR} -p ${TESTDIR}/tests
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/colordetectortest.o tests/colordetectortest.cpp
 
 
 ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp 
@@ -124,6 +142,19 @@ ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/backgroundsubtraction.o ${OBJECTDIR}/backgroundsubtraction_nomain.o;\
+	fi
+
+${OBJECTDIR}/carcontroller_nomain.o: ${OBJECTDIR}/carcontroller.o carcontroller.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/carcontroller.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller_nomain.o carcontroller.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/carcontroller.o ${OBJECTDIR}/carcontroller_nomain.o;\
 	fi
 
 ${OBJECTDIR}/colordetector_nomain.o: ${OBJECTDIR}/colordetector.o colordetector.cpp 
@@ -170,6 +201,7 @@ ${OBJECTDIR}/slotmanager_nomain.o: ${OBJECTDIR}/slotmanager.o slotmanager.cpp
 	@if [ "${TEST}" = "" ]; \
 	then  \
 	    ${TESTDIR}/TestFiles/f1 || true; \
+	    ${TESTDIR}/TestFiles/f2 || true; \
 	else  \
 	    ./${TEST} || true; \
 	fi

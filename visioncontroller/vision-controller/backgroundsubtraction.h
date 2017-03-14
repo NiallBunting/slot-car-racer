@@ -27,14 +27,15 @@ class Backgroundsubtraction {
 public:
     Backgroundsubtraction();
     int init(int cols, int rows);
-    int hasPixelChanged(int x, int y, int value);
+    int hasPixelChanged(int x, int y, cv::Mat& frame);
     //Trains the background on the images.
-    int trainBackground(cv::Mat& frame, int value);
+    int trainBackground(cv::Mat& frame);
     int maskCreate(cv::Mat& frame);
 private:
     int cols;
     int rows;
     BackgroundPixel* background;
+    int hasPixelChanged(int x, int y, int value);
 };
 
 #endif /* BACKGROUNDSUBTRACTION_H */

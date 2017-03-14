@@ -14,56 +14,63 @@
 #include <stdlib.h>
 #include <iostream>
 #include "backgroundsubtraction.h"
-#include "image.h"
+#include <cv.h>
 
 /*
  * Simple C++ Test Suite
  */
 
-void test1() {
-
-}
-
-void test2() {
-    std::cout << "backgroundsubtractiontest test 2" << std::endl;
-    std::cout << "%TEST_FAILED% time=0 testname=test2 (backgroundsubtractiontest) message=error message sample" << std::endl;
-}
-
-
 //train setup
 //test limits get expanded
 //test correct background returned
-void test(){
+void testhaspixelchanged(){
     std::cout << "backgroundsubtractiontest test" << std::endl;
     
-    int a[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Image* img1 = new Image(a);
-    
-    
-    int b[9] = {1, 2, 3, 6, 5, 6, 7, 8, 9};
-    Image* img2 = new Image(b);
-    
-    Backgroundsubtraction* bs = new Backgroundsubtraction();
-    bs->trainBackground(img1);
-    bs->trainBackground(img2);
-    
-    
-    int c[9] = {1, 2, 3, 5, 0, 0, 0, 0, 0};
-    Image* img3 = new Image(c);
-    
-    Image* f = bs->doFullBackSubtract(img3);
-
-    // 0 is where no change
     int fail = 0;
-    if(f->getPixel(0,0) != 0){fail = 1;}
-    if(f->getPixel(1,0) != 0){fail = 2;}
-    if(f->getPixel(2,0) != 0){fail = 3;}
-    if(f->getPixel(0,1) != 0){fail = 4;}
-    if(f->getPixel(1,1) != 1){fail = 5;}
-    if(f->getPixel(2,1) != 1){fail = 6;}
-    if(f->getPixel(0,2) != 1){fail = 7;}
-    if(f->getPixel(1,2) != 1){fail = 8;}
-    if(f->getPixel(2,2) != 1){fail = 9;}
+
+    //Set up
+    cv::Mat3f mat(20, 20);
+    Backgroundsubtraction* bs = new Backgroundsubtraction();
+    bs->init(20, 20);
+    //Change pixel value
+    cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(3,3));
+    color.val[0] = color.val[1] = color.val[2] = 0;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    
+    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    
+    bs->trainBackground(mat);
+    color = mat.at<cv::Vec3b>(cv::Point(3,3));
+    color.val[0] = color.val[1] = color.val[2] = 10;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    
+    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    
+    bs->trainBackground(mat);
+    //Set up mask
+    color = mat.at<cv::Vec3b>(cv::Point(3,3));
+    color.val[0] = color.val[1] = color.val[2] = 53;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    
+    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    
+    bs->maskCreate(mat);
+    
+    color = mat.at<cv::Vec3b>(cv::Point(3,3));
+    color.val[0] = color.val[1] = color.val[2] = 11;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color; 
+    
+    //Check pixel the same
+    if(bs->hasPixelChanged(0, 0, mat) != 1){fail = 1;}
+    std::cout << "hello" << bs->hasPixelChanged(3, 3, mat) << std::endl;
+    
+    //Change pixel value
+    color = mat.at<cv::Vec3b>(cv::Point(0,0));
+    color.val[0] = color.val[1] = color.val[2] = 10;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    
+    //Check now different
+    if(bs->hasPixelChanged(0, 0, mat) != 0){fail = 2;}
     
     if (fail != 0){
        std::cout << "%TEST_FAILED% time=0 testname=test (backgroundsubtractiontest) message=erm wrong" << fail << std::endl;
@@ -71,15 +78,12 @@ void test(){
     
 }
 
-
-
-
 int main(int argc, char** argv) {
     std::cout << "%SUITE_STARTING% backgroundsubtractiontest" << std::endl;
     std::cout << "%SUITE_STARTED%" << std::endl;
 
     std::cout << "%TEST_STARTED% test2 (backgroundsubtractiontest)\n" << std::endl;
-    test();
+    testhaspixelchanged();
     std::cout << "%TEST_FINISHED% time=0 test2 (backgroundsubtractiontest)" << std::endl;
 
     std::cout << "%SUITE_FINISHED% time=0" << std::endl;

@@ -18,6 +18,10 @@ Slotmanager::Slotmanager(){}
 
 //This is for collecting the mouse clicks. Calls the Slotmanager pointer.
 Slotmanager* g_pointer_slotmanager;
+const int BOXLENGTH = 10;
+const int BOXJUMP = 11;
+
+
 void CallBackFunc(int event, int x, int y, int flags, void* userdata){
     if  ( event == cv::EVENT_LBUTTONDOWN )
     {
@@ -71,7 +75,7 @@ int Slotmanager::update(){
             //learn background
             cv::cvtColor(frame, frame, cv::COLOR_BGR2HLS);
             GaussianBlur(frame, frame, cv::Size(7,7), 1.5, 1.5);
-            bs->trainBackground(frame, 1);
+            bs->trainBackground(frame);
             break;
         case 1:
             //learn mask
@@ -106,7 +110,7 @@ int Slotmanager::update(){
             }
             break;
         default:
-            this->Match(frame);
+            cv::Point average = this->Match(frame);
             break;
     }
     
@@ -156,42 +160,59 @@ int Slotmanager::mouseClick(int x, int y) {
 }
 
 //Called when doing the match testing.
-int Slotmanager::Match(cv::Mat& frame){
+cv::Point Slotmanager::Match(cv::Mat& frame){
     cv::Mat hlsframe;
     cv::cvtColor(frame, hlsframe, cv::COLOR_BGR2HLS);
-    GaussianBlur(frame, frame, cv::Size(7,7), 1.5, 1.5);
     
-    for(int x = 10; x < frame.cols; x+= 15){
-        for(int y = 10; y < frame.rows; y+= 15){
+    double ytotal = 0;
+    double xtotal = 0;
+    double boxtotal = 0;
+    
+    for(int x = BOXLENGTH; x < frame.cols; x+= BOXJUMP){
+        for(int y = BOXLENGTH; y < frame.rows; y+= BOXJUMP){
             
-            
-            //Purple
-            if(this->bs->hasPixelChanged(x, y, 0) == 0){                
+            //This checks if the pixel is part of the mask or actually has changed.
+            if(this->bs->hasPixelChanged(x, y, hlsframe) == 0){                
                 cv::rectangle(
                 frame,
                 cv::Point(x, y),
-                cv::Point(x - 10, y - 10),
-                cv::Scalar(255, 0, 255)
+                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
+                cv::Scalar(255, 0, 255)//Purple
                 );  
                 continue;
             }
             
-            if(this->cd->matchColor(hlsframe, x-10, x, y-10, y) < 0.5){
+            //Then check if the pixel matches if has changed.
+            if(this->cd->matchColor(hlsframe, x-BOXLENGTH, x, y-BOXLENGTH, y) < 0.5){
+                //Pixel has changed and matches colour.
                 cv::rectangle(
                 frame,
                 cv::Point(x, y),
-                cv::Point(x - 10, y - 10),
+                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
                 cv::Scalar(0, 255, 255)//yellow
-                );                
+                );
+
+                //Add the values to create the average.
+                ytotal += y;
+                xtotal += x;
+                boxtotal++;
             }else{
                 cv::rectangle(
                 frame,
                 cv::Point(x, y),
-                cv::Point(x - 10, y - 10),
+                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
                 cv::Scalar(255, 255, 0)//blue
                 );     
             }
 
         }
     }
+    
+    //Calculate average and draw circle.
+    ytotal /= boxtotal;
+    xtotal /= boxtotal;
+    
+    cv::circle(frame, cv::Point(xtotal, ytotal), 4, cv::Scalar(255, 255, 255), 20);
+    
+    return cv::Point(xtotal, ytotal);
 }

@@ -41,7 +41,7 @@ private:
     Colordetector* cd;
     //Frame for the colour
     cv::Mat colframe;
-    int Match(cv::Mat& frame);
+    cv::Point Match(cv::Mat& frame);
 };
 
 #endif /* SLOTMANAGER_H */
