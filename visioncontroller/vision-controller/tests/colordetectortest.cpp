@@ -13,18 +13,30 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include "colordetector.h"
 
 /*
  * Simple C++ Test Suite
  */
 
 void test1() {
-    std::cout << "newsimpletest test 1" << std::endl;
-}
+    int fail = 0;
 
-void test2() {
-    std::cout << "newsimpletest test 2" << std::endl;
-    std::cout << "%TEST_FAILED% time=0 testname=test2 (newsimpletest) message=error message sample" << std::endl;
+    //Set up
+    cv::Mat3f mat(20, 20);
+    Colordetector* cd = new Colordetector();
+    
+    //Change pixel value
+    cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(3,3));
+    color.val[0] = color.val[1] = color.val[2] = 0;
+    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    
+    
+    
+    cd->learnColor(mat, 0, 5, 0, 5);
+    
+    cd->matchColor(mat, 0, 5, 0, 5);
+    cd->matchColor(mat 10, 15, 10, 15);
 }
 
 int main(int argc, char** argv) {
@@ -34,10 +46,6 @@ int main(int argc, char** argv) {
     std::cout << "%TEST_STARTED% test1 (newsimpletest)" << std::endl;
     test1();
     std::cout << "%TEST_FINISHED% time=0 test1 (newsimpletest)" << std::endl;
-
-    std::cout << "%TEST_STARTED% test2 (newsimpletest)\n" << std::endl;
-    test2();
-    std::cout << "%TEST_FINISHED% time=0 test2 (newsimpletest)" << std::endl;
 
     std::cout << "%SUITE_FINISHED% time=0" << std::endl;
 

@@ -18,6 +18,7 @@
 #include <highgui.h>
 #include "backgroundsubtraction.h"
 #include "colordetector.h"
+#include "carcontroller.h"
 
 class Slotmanager {
 public:
@@ -42,6 +43,7 @@ private:
     //Frame for the colour
     cv::Mat colframe;
     cv::Point Match(cv::Mat& frame);
+    Carcontroller* cc;
 };
 
 #endif /* SLOTMANAGER_H */

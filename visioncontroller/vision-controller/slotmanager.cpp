@@ -61,6 +61,10 @@ int Slotmanager::init(Slotmanager* sm){
     //Colour detector
     this->cd = new Colordetector();
     
+    //Create the car controller.
+    this->cc = new Carcontroller();
+    this->cc->init(this->cols, this->rows);
+    
     return 0;
 }
 
@@ -111,6 +115,7 @@ int Slotmanager::update(){
             break;
         default:
             cv::Point average = this->Match(frame);
+            this->cc->update(average);
             break;
     }
     
