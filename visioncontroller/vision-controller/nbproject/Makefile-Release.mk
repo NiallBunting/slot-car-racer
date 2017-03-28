@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/carcontroller.o \
 	${OBJECTDIR}/colordetector.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/serialcommunicator.o \
 	${OBJECTDIR}/slotmanager.o
 
 # Test Directory
@@ -97,6 +98,11 @@ ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/serialcommunicator.o: serialcommunicator.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serialcommunicator.o serialcommunicator.cpp
 
 ${OBJECTDIR}/slotmanager.o: slotmanager.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -181,6 +187,19 @@ ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main.o ${OBJECTDIR}/main_nomain.o;\
+	fi
+
+${OBJECTDIR}/serialcommunicator_nomain.o: ${OBJECTDIR}/serialcommunicator.o serialcommunicator.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/serialcommunicator.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serialcommunicator_nomain.o serialcommunicator.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/serialcommunicator.o ${OBJECTDIR}/serialcommunicator_nomain.o;\
 	fi
 
 ${OBJECTDIR}/slotmanager_nomain.o: ${OBJECTDIR}/slotmanager.o slotmanager.cpp 

@@ -11,36 +11,46 @@
  * Created on 14 March 2017, 11:06
  */
 
-#include <cv.h>
+#include <cv.h> /* include openCv */
+#include "serialcommunicator.h"
 
 #ifndef CARCONTROLLER_H
 #define CARCONTROLLER_H
 
 struct speeds{
-    int i0;
-    int i1;
-    int i2;
-    int i4;
-    int i6;
-    int i8;
-    
+    static const int size = 5;
+    //1000 miliseconds. 1000/100 = 10 size of interval
+    static const int time = 100;
+    int speed[size];
+    int increaser;
     int locked;
 };
 
 class Carcontroller {
 public:
     Carcontroller();
+    virtual ~Carcontroller();
     int init(int columns, int rows);
     int update(cv::Point point);
 private:
     int columns;
     int rows;
+    
+    //dead reckoning box
     speeds* boxes;
     int updateboxspeeds(speeds* s);
     
     int safespeed;
     int safespeedset;
     speeds* lastbox;
+    
+    int setSpeed(int speed);
+    int setSpeed(speeds* s);
+    int speedToVoltage(int speed);
+    
+    //serial communicator
+    Serialcommunicator* sc;
+    pthread_t serialThread;
 };
 
 #endif /* CARCONTROLLER_H */

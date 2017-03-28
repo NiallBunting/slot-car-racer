@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/carcontroller.o \
 	${OBJECTDIR}/colordetector.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/serialcommunicator.o \
 	${OBJECTDIR}/slotmanager.o
 
 # Test Directory
@@ -68,7 +69,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-Wl,-rpath,/usr/include/opencv2 `pkg-config --libs opencv`  
+LDLIBSOPTIONS=-Wl,-rpath,/usr/include/opencv2 `pkg-config --libs opencv` -lpthread   
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -81,27 +82,32 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/vision-controller: ${OBJECTFILES}
 ${OBJECTDIR}/backgroundsubtraction.o: backgroundsubtraction.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
 
 ${OBJECTDIR}/carcontroller.o: carcontroller.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller.o carcontroller.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller.o carcontroller.cpp
 
 ${OBJECTDIR}/colordetector.o: colordetector.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector.o colordetector.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector.o colordetector.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/serialcommunicator.o: serialcommunicator.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serialcommunicator.o serialcommunicator.cpp
 
 ${OBJECTDIR}/slotmanager.o: slotmanager.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager.o slotmanager.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager.o slotmanager.cpp
 
 # Subprojects
 .build-subprojects:
@@ -122,13 +128,13 @@ ${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/colordetectortest.o ${OBJECTFILES:%.o=
 ${TESTDIR}/backgroundsubtractiontest.o: backgroundsubtractiontest.cpp 
 	${MKDIR} -p ${TESTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 -I. `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${TESTDIR}/backgroundsubtractiontest.o backgroundsubtractiontest.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 -I. `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${TESTDIR}/backgroundsubtractiontest.o backgroundsubtractiontest.cpp
 
 
 ${TESTDIR}/tests/colordetectortest.o: tests/colordetectortest.cpp 
 	${MKDIR} -p ${TESTDIR}/tests
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/usr/include/opencv2 -I. `pkg-config --cflags opencv`   -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/colordetectortest.o tests/colordetectortest.cpp
+	$(COMPILE.cc) -g -I/usr/include/opencv2 -I. `pkg-config --cflags opencv` -std=c++11  -MMD -MP -MF "$@.d" -o ${TESTDIR}/tests/colordetectortest.o tests/colordetectortest.cpp
 
 
 ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp 
@@ -139,7 +145,7 @@ ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction_nomain.o backgroundsubtraction.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/backgroundsubtraction.o ${OBJECTDIR}/backgroundsubtraction_nomain.o;\
 	fi
@@ -152,7 +158,7 @@ ${OBJECTDIR}/carcontroller_nomain.o: ${OBJECTDIR}/carcontroller.o carcontroller.
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller_nomain.o carcontroller.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller_nomain.o carcontroller.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/carcontroller.o ${OBJECTDIR}/carcontroller_nomain.o;\
 	fi
@@ -165,7 +171,7 @@ ${OBJECTDIR}/colordetector_nomain.o: ${OBJECTDIR}/colordetector.o colordetector.
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector_nomain.o colordetector.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/colordetector_nomain.o colordetector.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/colordetector.o ${OBJECTDIR}/colordetector_nomain.o;\
 	fi
@@ -178,9 +184,22 @@ ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main_nomain.o main.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main.o ${OBJECTDIR}/main_nomain.o;\
+	fi
+
+${OBJECTDIR}/serialcommunicator_nomain.o: ${OBJECTDIR}/serialcommunicator.o serialcommunicator.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/serialcommunicator.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/serialcommunicator_nomain.o serialcommunicator.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/serialcommunicator.o ${OBJECTDIR}/serialcommunicator_nomain.o;\
 	fi
 
 ${OBJECTDIR}/slotmanager_nomain.o: ${OBJECTDIR}/slotmanager.o slotmanager.cpp 
@@ -191,7 +210,7 @@ ${OBJECTDIR}/slotmanager_nomain.o: ${OBJECTDIR}/slotmanager.o slotmanager.cpp
 	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
 	then  \
 	    ${RM} "$@.d";\
-	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv`   -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager_nomain.o slotmanager.cpp;\
+	    $(COMPILE.cc) -g -I/usr/include/opencv2 `pkg-config --cflags opencv` -std=c++11  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/slotmanager_nomain.o slotmanager.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/slotmanager.o ${OBJECTDIR}/slotmanager_nomain.o;\
 	fi

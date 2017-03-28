@@ -18,8 +18,8 @@ Slotmanager::Slotmanager(){}
 
 //This is for collecting the mouse clicks. Calls the Slotmanager pointer.
 Slotmanager* g_pointer_slotmanager;
-const int BOXLENGTH = 10;
-const int BOXJUMP = 11;
+const int BOXLENGTH = 6;
+const int BOXJUMP = 7;
 
 
 void CallBackFunc(int event, int x, int y, int flags, void* userdata){
@@ -37,8 +37,11 @@ int Slotmanager::init(Slotmanager* sm){
     //Set up the video source.
     //this->cap = new cv::VideoCapture("/aber/nib28/out.mp4");
     this->cap = new cv::VideoCapture(0);
+    //Set resolution of the camera
+    this->cap->set(CV_CAP_PROP_FRAME_WIDTH, 640);
+    this->cap->set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     if(!this->cap->isOpened()){
-        std::cout << "Could not open stream/file." << std::endl;
+        std::cout << "Could not open stream/file - camera." << std::endl;
         return -1;
     }
     
@@ -173,6 +176,8 @@ cv::Point Slotmanager::Match(cv::Mat& frame){
     double xtotal = 0;
     double boxtotal = 0;
     
+    int boxonlastx = 0;
+    int boxonlasty = 0;
     for(int x = BOXLENGTH; x < frame.cols; x+= BOXJUMP){
         for(int y = BOXLENGTH; y < frame.rows; y+= BOXJUMP){
             
@@ -197,10 +202,24 @@ cv::Point Slotmanager::Match(cv::Mat& frame){
                 cv::Scalar(0, 255, 255)//yellow
                 );
 
+                // There here means that if there is a positive box to the left
+                // or above this box this gets a weight rather than one.
+                // This should hopefully reduce the effect of outliers.
+                int multiplier = 1;
+                if((boxonlastx - BOXJUMP) == x){
+                    multiplier *= 100;
+                }
+                if((boxonlasty - BOXJUMP) == y){
+                    multiplier *= 100;
+                }
+                
+                boxonlastx = x;
+                boxonlasty = y;
+                
                 //Add the values to create the average.
-                ytotal += y;
-                xtotal += x;
-                boxtotal++;
+                ytotal += y * multiplier;
+                xtotal += x * multiplier;
+                boxtotal+=multiplier;
             }else{
                 cv::rectangle(
                 frame,
@@ -211,6 +230,7 @@ cv::Point Slotmanager::Match(cv::Mat& frame){
             }
 
         }
+        //
     }
     
     //Calculate average and draw circle.

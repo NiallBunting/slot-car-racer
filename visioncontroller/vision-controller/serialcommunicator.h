@@ -14,7 +14,24 @@
 #ifndef SERIALCOMMUNICATOR_H
 #define SERIALCOMMUNICATOR_H
 
+#include <string> /* String definions */
+using namespace std;
+#include <chrono> /* Time related definions */
+
+typedef std::chrono::high_resolution_clock clck;
+
 struct speeds;
+
+struct car{
+    int passedGate;
+    int onTrack;
+    int lastLapTime;
+    int currentSpeed;
+    int mode;
+    char id;
+};
+
+const int AMOUNTOFCARS;
 
 class Serialcommunicator {
 public:
@@ -22,15 +39,22 @@ public:
     virtual ~Serialcommunicator();
     int init();
     int setVoltage(speeds* s);
-    int setVoltage(int s);
+    int getPwm();
     int update();
     int open_port();
     int set_options(int fd);
+    int parseBuffer(string str);
+    int hasPassedGate();
+    int isOnTrack();
 private:
     speeds* voltage;
-    int time;
+    std::chrono::time_point<clck> time;
+    bool voltageblock;
     
     int fd;
+    
+    car* cars[AMOUNTOFCARS];
+
 };
 
 #endif /* SERIALCOMMUNICATOR_H */
