@@ -36,7 +36,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/backgroundsubtraction.o \
+	${OBJECTDIR}/car.o \
 	${OBJECTDIR}/carcontroller.o \
+	${OBJECTDIR}/cardetector.o \
 	${OBJECTDIR}/colordetector.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/serialcommunicator.o \
@@ -84,10 +86,20 @@ ${OBJECTDIR}/backgroundsubtraction.o: backgroundsubtraction.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/backgroundsubtraction.o backgroundsubtraction.cpp
 
+${OBJECTDIR}/car.o: car.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/car.o car.cpp
+
 ${OBJECTDIR}/carcontroller.o: carcontroller.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller.o carcontroller.cpp
+
+${OBJECTDIR}/cardetector.o: cardetector.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/cardetector.o cardetector.cpp
 
 ${OBJECTDIR}/colordetector.o: colordetector.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -150,6 +162,19 @@ ${OBJECTDIR}/backgroundsubtraction_nomain.o: ${OBJECTDIR}/backgroundsubtraction.
 	    ${CP} ${OBJECTDIR}/backgroundsubtraction.o ${OBJECTDIR}/backgroundsubtraction_nomain.o;\
 	fi
 
+${OBJECTDIR}/car_nomain.o: ${OBJECTDIR}/car.o car.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/car.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/car_nomain.o car.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/car.o ${OBJECTDIR}/car_nomain.o;\
+	fi
+
 ${OBJECTDIR}/carcontroller_nomain.o: ${OBJECTDIR}/carcontroller.o carcontroller.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	@NMOUTPUT=`${NM} ${OBJECTDIR}/carcontroller.o`; \
@@ -161,6 +186,19 @@ ${OBJECTDIR}/carcontroller_nomain.o: ${OBJECTDIR}/carcontroller.o carcontroller.
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/carcontroller_nomain.o carcontroller.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/carcontroller.o ${OBJECTDIR}/carcontroller_nomain.o;\
+	fi
+
+${OBJECTDIR}/cardetector_nomain.o: ${OBJECTDIR}/cardetector.o cardetector.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/cardetector.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/cardetector_nomain.o cardetector.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/cardetector.o ${OBJECTDIR}/cardetector_nomain.o;\
 	fi
 
 ${OBJECTDIR}/colordetector_nomain.o: ${OBJECTDIR}/colordetector.o colordetector.cpp 

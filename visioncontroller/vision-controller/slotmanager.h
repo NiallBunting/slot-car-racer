@@ -16,34 +16,41 @@
 
 #include <cv.h>
 #include <highgui.h>
-#include "backgroundsubtraction.h"
-#include "colordetector.h"
 #include "carcontroller.h"
+#include "cardetector.h"
+#include "serialcommunicator.h"
+
+class Carcontroller;
+struct dead_reckon_interval;
+class Serialcommunicator;
 
 class Slotmanager {
 public:
     Slotmanager();
+    virtual ~Slotmanager();
     int init(Slotmanager* sm);
     //Called each update.
     int update();
     int mouseClick(int x, int y);
 private:
     int capture(cv::Mat& frame);
+    cv::Point* getMouseClick();
+    
     //Size of image.
     int cols;
     int rows;
     cv::VideoCapture* cap;
-    //Which stage of the process the program is on.
-    int action;
-    Backgroundsubtraction* bs;
-    //For selecting the car. x1, x2, y1, y2
-    int mouseselect[4];
-    int mousepoint;
-    Colordetector* cd;
-    //Frame for the colour
-    cv::Mat colframe;
-    cv::Point Match(cv::Mat& frame);
-    Carcontroller* cc;
+    
+    //User interaction values
+    cv::Point* mousePress;
+    int keyPress;
+    
+    //serial communicator
+    Serialcommunicator* serialCom;
+    pthread_t serialThread;
+    
+    Car* computerCar;
+    Car* humanCar;
 };
 
 #endif /* SLOTMANAGER_H */

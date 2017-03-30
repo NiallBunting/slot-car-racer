@@ -27,30 +27,22 @@ int Serialcommunicator::init(){
     this->open_port();
     this->set_options(this->fd);
     
-    //Set up so can be deleted
-    this->voltage = new speeds;
-    this->voltageblock = false;
+    this->carCounter = 0;
     
-    for(int i = 0; i < AMOUNTOFCARS; i++){
-        this->cars[i] = new car;
-        this->cars[i]->id = 'A';
-        this->cars[i]->lastLapTime = 0;
-        this->cars[i]->mode = 0;
-        this->cars[i]->onTrack = 1;
-        this->cars[i]->passedGate = 0;        
-    }
+    this->quitvalue = 0;
     
-    //TEMORARY
-    this->cars[1]->mode = 1;
-    this->cars[1]->id = 'B';
+}
 
+int Serialcommunicator::addCar(Car* c){
+    this->cars[this->carCounter] = c;
+    this->carCounter++;
 }
 
 int Serialcommunicator::update(){
     
-    for(;;){
+    for(;;){        
         //Collect any data
-        char buffer[20];
+        char buffer[50];
         int bufread = read(this->fd, &buffer, sizeof(buffer));
         if(bufread < 0){
             fputs("read failed.\n", stderr);
@@ -58,18 +50,26 @@ int Serialcommunicator::update(){
             std::string readstring(buffer);
             this->parseBuffer(readstring);
         }
-        //can read a not present and a gate passed
         
-        //send any data       
-        int pwm = this->getPwm();
-        
-        std::string towrite = "A,P," + std::to_string(pwm) + "\r";
+        for(int i = 0; i < this->carCounter; i++){
+            int pwm = this->getPwm(this->cars[i]);
+            
+            if(pwm != this->cars[i]->getCurrentSpeed()){
+                this->cars[i]->setCurrentSpeed(pwm);
+                
+                std::string carIdChar(1, this->cars[i]->getId());
+                std::string towrite = carIdChar + ",P," + std::to_string(pwm) + '\n';
+                
+                int bufwrite = write(this->fd, towrite.c_str(), towrite.length());
+                
+                if (bufwrite < 0){
+                    fputs("write failed.\n", stderr);
+                }
+            }
 
-        int bufwrite = write(this->fd, towrite.c_str(), towrite.length());
-        //write mode, pwm and to gate
-        
-        if (bufwrite < 0){
-            fputs("write failed.\n", stderr);
+        }
+        if(this->quitvalue){
+            return 0;
         }
     }
 
@@ -80,30 +80,28 @@ int Serialcommunicator::parseBuffer(std::string str){
     
     int start = -1;
     int end = -1;
-    
-    for(int cars = 0; cars < AMOUNTOFCARS; cars++){
+
+    for(int cars = 0; cars < this->carCounter; cars++){
         for(int i = 0; i < str.length(); i++){
-            if(str.at(i) == this->cars[cars]->id){
-                std::cout << "hellohere" << std::endl;
+            if(str.at(i) == this->cars[cars]->getId()){
                 start = i;
             }
-            if(str.at(i) == '\r'){
+            if(str.at(i) == '\n'){
                 end = i;
                 break;
             }
         }
-
+        std::cout << "first: " << start << " end:" << end << " char: " <<  str.at(start + 2) << std::endl;
         //check if have a full message
         if(start != -1 && end != -1){
             //If the car is detected off the track
             if(str.at(start + 2) == 'N'){
-                this->cars[cars]->onTrack = 0;
+                this->cars[cars]->offTrack();
             }
 
             //On completion of the track
             if(str.at(start + 2) == 'G'){
-                this->cars[cars]->onTrack = 1;
-                this->cars[cars]->passedGate;
+                this->cars[cars]->gatePassed();
             }
         }
     }
@@ -111,66 +109,60 @@ int Serialcommunicator::parseBuffer(std::string str){
     return 0;
 }
 
-int Serialcommunicator::hasPassedGate(){
-    int temp = this->passedGate;
-    this->passedGate = 0;
-    return temp;
-}
+/*
+int Serialcommunicator::hasPassedGate(char car){
+    for(int cars = 0; cars < AMOUNTOFCARS; cars++){
+        if(this->cars[cars]->id == car){
+            int temp = this->cars[cars]->passedGate;
+            this->cars[cars]->passedGate = 0;
+            return temp;
+        }
+    }    
 
-int Serialcommunicator::isOnTrack(){
-    return this->onTrack;
-}
-
-int Serialcommunicator::getPwm(){
-    //block while in use
-    while(this->voltageblock == true){}
-    this->voltageblock = true;
-    
-    
-    //check the time and divide to get interval
-    std::chrono::time_point<clck> end = clck::now();
-    int msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - this->time).count();
-    msec /= this->voltage->time;
-        
-    int pwm = 0;
-    
-    //if passed the pwm just use the last speed
-    if(msec >= 0 && msec <= this->voltage->size){
-        pwm = this->voltage->speed[msec];
-    }else{
-        pwm = this->voltage->speed[this->voltage->size - 1];
-    }
-    
-    this->voltageblock = false;
-    
-    return pwm;
-}
-
-int Serialcommunicator::setVoltage(speeds* s){
-    //block while in use
-    while(this->voltageblock == true){}
-    this->voltageblock = true;
-    
-    //Deletes current one and sets to the new one. Restarts the clock.
-    delete this->voltage;
-    this->voltage = s;
-    this->time = clck::now();
-    
-    this->voltageblock = false;
-    
     return 0;
 }
 
+int Serialcommunicator::isOnTrack(char car){
+    for(int cars = 0; cars < AMOUNTOFCARS; cars++){
+        if(this->cars[cars]->id == car){
+            return this->cars[cars]->onTrack;
+        }
+    }    
+
+    return 0;
+}
+*/
+int Serialcommunicator::getPwm(Car* c){
+ 
+    //check the time and divide to get interval
+    //std::chrono::time_point<clck> end = clck::now();
+    //int msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - this->time).count();
+    //msec /= this->voltage->time;
+        
+    //int pwm = 0;
+    
+    //if passed the pwm just use the last speed
+    //if(msec >= 0 && msec <= this->voltage->size){
+    //    pwm = this->voltage->speed[msec];
+    //}else{
+    //    pwm = this->voltage->speed[this->voltage->size - 1];
+    //}
+    
+    //this->voltageblock = false;
+    
+    return 100;
+}
+
+
 Serialcommunicator::~Serialcommunicator(){
     close(this->fd);
-    delete this->cars[0];
 }
 
 int Serialcommunicator::open_port(){
       
     //"/dev/ttyACM0",
     //"/dev/ttyUSB0"
-    this->fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+    this->fd = open("/dev/ttyACM0", O_NONBLOCK | O_NDELAY | O_RDWR | O_NOCTTY );
     if (this->fd == -1){
         perror("Unable to open serial port.");
     }else{
@@ -197,6 +189,8 @@ int Serialcommunicator::set_options(int fd){
     options.c_cflag &= ~CSTOPB;
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8;
+    
+    
 
     //port options
     options.c_lflag |= (ICANON | ECHO | ECHOE);
@@ -206,4 +200,9 @@ int Serialcommunicator::set_options(int fd){
     
     fcntl(fd, F_SETFL, 0);
     
+}
+
+int Serialcommunicator::quit(){
+    this->quitvalue = 1;
+    return 0;
 }

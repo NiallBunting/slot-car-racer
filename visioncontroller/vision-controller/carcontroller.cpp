@@ -15,31 +15,26 @@
 #include <pthread.h>
 
 const int BASESPEED = 150;
-const int BOXSIZE = 10;
-
-static void* serialCommunicatorWrap(void* arg) {
-    ((Serialcommunicator*) arg)->update();
-    return 0;
-}
+const int BOXSIZE = 30;
 
 Carcontroller::Carcontroller() {
 }
 
 Carcontroller::~Carcontroller(){
-    pthread_join( this->serialThread, NULL);
-    delete this->sc;
 }
 
 
-int Carcontroller::init(int columns, int rows){
+int Carcontroller::init(Car* c, int columns, int rows){
     this->columns = columns;
     this->rows = rows;
     
-    this->boxes = new speeds[columns * rows];
+    this->thisCar = c;
     
-    for(int i = 0; i < columns * rows; i++){
+    this->boxes = new dead_reckon_interval[(columns / BOXSIZE) * (rows/ BOXSIZE)];
+    
+    for(int i = 0; i < ((columns / BOXSIZE) * (rows/ BOXSIZE)); i++){
         this->boxes[i].locked = 0;
-        this->boxes[i].increaser = 0;
+        this->boxes[i].updateCount = 0;
         for(int j = 0; j < 5; j++){
             this->boxes[i].speed[j] = BASESPEED;
         }
@@ -47,76 +42,62 @@ int Carcontroller::init(int columns, int rows){
     
     this->safespeed = BASESPEED;
     this->safespeedset = 0;
-    
-    this->sc = new Serialcommunicator();
-    this->sc->init();
-    
-    int iret1 = pthread_create( &this->serialThread, NULL, &serialCommunicatorWrap, this->sc);
-    if(iret1){
-        fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
-        exit(EXIT_FAILURE);
-    }
-    
+        
     //set an inital speed for learning
     this->setSpeed(BASESPEED);
 }
 
-int Carcontroller::update(cv::Point point){
+int Carcontroller::update(cv::Point* point){
     
     //is off the track
-    if(!this->sc->isOnTrack()){
-        // lock last box
+    if(!this->thisCar->isOnTrack()){
+        this->setSpeed(BASESPEED);
     }
-
-
-    if(this->safespeedset == 0){
     
+    if(this->safespeedset == 0){
+          
         //Drive around slowly increasing the speed
-        if(this->sc->hasPassedGate()){
+        if(this->thisCar->hasPassedGate()){
             this->safespeed++;
-            std::cout << "Safespeed is now: " << this->safespeed << std::endl;
             this->setSpeed(this->safespeed);
         }
         //Learn track here as well -- in box set to safe speed
         
         //Keep going till come off track
-        if(!this->sc->isOnTrack()){
+        if(!this->thisCar->isOnTrack()){
             this->safespeed *= 0.97;
             this->safespeedset = 1;
+            std::cout << "Final max speed: " << this->safespeed << std::endl;
         }
     }else{
-        //throw error
-        int j = 0;
-        int a = 1 / j;
-        
-        int i = (point.y * this->columns) + point.x;
+
+        int i = ((point->y/BOXSIZE)  * (this->columns/BOXSIZE)) + (point->x/BOXSIZE);
     
-        //if(//inabox){
-        this->updateboxspeeds(&this->boxes[i]);
-        this->setSpeed(&this->boxes[i]);
-        //}else
-        //this->setSpeed(this->safespeed)
-        //}
+        //Check if the box is locked
+        if(this->boxes[i].locked == 0){
+            this->updateboxspeeds(&this->boxes[i]);
+            this->setSpeed(&this->boxes[i]);
+            this->lastbox = &this->boxes[i];
+        }else{
+            this->setSpeed(&this->boxes[i]);
+        }
         
-        //work out current speed of car and what its meant to be doing
-    
-        this->lastbox = &this->boxes[i];
     }
     
     return 0;
 }
 
-int Carcontroller::updateboxspeeds(speeds* s){
+int Carcontroller::updateboxspeeds(dead_reckon_interval* s){
     
     if(s->locked == 1){return 1;}
     
     //Increase speeds
-    s->speed[s->increaser]++;
-    s->increaser++;
+    s->speed[s->updateCount]++;
+    s->updateCount++;
     
     //Reset increaser if reached size.
-    if(s->increaser >= s->size){
-        s->increaser = 0;
+    if(s->updateCount >= s->size){
+        s->updateCount = 0;
     }
     
     return 0;
@@ -125,9 +106,7 @@ int Carcontroller::updateboxspeeds(speeds* s){
 int Carcontroller::setSpeed(int speed){
     
     //Create new struct
-    speeds* volts = new speeds();
-    volts->locked = 0;
-    volts->increaser = 0;
+    dead_reckon_interval* volts = new dead_reckon_interval();
     
     //Copy speeds to voltage
     for(int i = 0; i < volts->size; i++){
@@ -140,15 +119,13 @@ int Carcontroller::setSpeed(int speed){
     }
 
     //Set dead reckoning
-    this->sc->setVoltage(volts);
+    this->thisCar->setInterval(volts);
 }
 
-int Carcontroller::setSpeed(speeds* s){
+int Carcontroller::setSpeed(dead_reckon_interval* s){
     
     //Create new struct
-    speeds* volts = new speeds();
-    volts->locked = 0;
-    volts->increaser = 0;
+    dead_reckon_interval* volts = new dead_reckon_interval();
     
     //Copy speeds to voltage
     for(int i = 0; i < s->size; i++){
@@ -161,7 +138,7 @@ int Carcontroller::setSpeed(speeds* s){
     }
 
     //Set dead reckoning
-    this->sc->setVoltage(volts);
+    this->thisCar->setInterval(volts);
 }
 
 int Carcontroller::speedToVoltage(int speed){

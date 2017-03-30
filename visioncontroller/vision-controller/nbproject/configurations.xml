@@ -5,7 +5,9 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>backgroundsubtraction.h</itemPath>
+      <itemPath>car.h</itemPath>
       <itemPath>carcontroller.h</itemPath>
+      <itemPath>cardetector.h</itemPath>
       <itemPath>colordetector.h</itemPath>
       <itemPath>main.h</itemPath>
       <itemPath>serialcommunicator.h</itemPath>
@@ -19,7 +21,9 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>backgroundsubtraction.cpp</itemPath>
+      <itemPath>car.cpp</itemPath>
       <itemPath>carcontroller.cpp</itemPath>
+      <itemPath>cardetector.cpp</itemPath>
       <itemPath>colordetector.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>serialcommunicator.cpp</itemPath>
@@ -80,9 +84,17 @@
       </item>
       <item path="backgroundsubtractiontest.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="car.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="car.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="carcontroller.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="carcontroller.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="cardetector.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="cardetector.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="colordetector.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -159,9 +171,17 @@
       </item>
       <item path="backgroundsubtractiontest.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="car.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="car.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="carcontroller.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="carcontroller.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="cardetector.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="cardetector.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="colordetector.cpp" ex="false" tool="1" flavor2="0">
       </item>

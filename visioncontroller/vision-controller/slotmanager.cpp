@@ -12,16 +12,19 @@
  */
 
 #include "slotmanager.h"
-#include "colordetector.h"
 
 Slotmanager::Slotmanager(){}
 
+Slotmanager::~Slotmanager(){
+    this->serialCom->quit();
+    pthread_join( this->serialThread, NULL);
+    delete this->serialCom;
+}
+
 //This is for collecting the mouse clicks. Calls the Slotmanager pointer.
 Slotmanager* g_pointer_slotmanager;
-const int BOXLENGTH = 6;
-const int BOXJUMP = 7;
 
-
+//This is called when the mouse is clicked on the frame.
 void CallBackFunc(int event, int x, int y, int flags, void* userdata){
     if  ( event == cv::EVENT_LBUTTONDOWN )
     {
@@ -29,9 +32,14 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata){
     }
 }
 
+//This is to start the serial thread.
+static void* serialCommunicatorWrap(void* arg) {
+    ((Serialcommunicator*) arg)->update();
+    return 0;
+}
+
 //Sets up the slotmanager
 int Slotmanager::init(Slotmanager* sm){
-    this->action = 0;
     cv::Mat frame;
     
     //Set up the video source.
@@ -52,21 +60,25 @@ int Slotmanager::init(Slotmanager* sm){
     this->cols = frame.cols;
     this->rows = frame.rows;
     
-    this->bs = new Backgroundsubtraction();
-    this->bs->init(this->cols, this->rows);
-    
     //set global pointer to this object.
     g_pointer_slotmanager = sm;
     
-    //once mouse positions have been set.
-    this->mousepoint = 0;
+    //setup the cars
+    this->computerCar = new Car('A', 1, this->cols, this->rows);
+    this->humanCar = new Car('B', 0, this->cols, this->rows);
     
-    //Colour detector
-    this->cd = new Colordetector();
+    //The point that will be used
+    this->mousePress = new cv::Point(0, 0);
     
-    //Create the car controller.
-    this->cc = new Carcontroller();
-    this->cc->init(this->cols, this->rows);
+    //Serial communication
+    this->serialCom = new Serialcommunicator();
+    this->serialCom->init();
+    
+    int iret1 = pthread_create( &this->serialThread, NULL, &serialCommunicatorWrap, this->serialCom);
+    if(iret1){
+        fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
+        exit(EXIT_FAILURE);
+    }
     
     return 0;
 }
@@ -77,66 +89,35 @@ int Slotmanager::update(){
     cv::Mat frame;
     if(this->capture(frame) != 0){return -1;}
     
-    switch(this->action){
-        case 0:
-            //learn background
-            cv::cvtColor(frame, frame, cv::COLOR_BGR2HLS);
-            GaussianBlur(frame, frame, cv::Size(7,7), 1.5, 1.5);
-            bs->trainBackground(frame);
-            break;
-        case 1:
-            //learn mask
-            cv::cvtColor(frame, frame, cv::COLOR_BGR2HLS);
-            GaussianBlur(frame, frame, cv::Size(7,7), 1.5, 1.5);
-            bs->maskCreate(frame);
-            break;
-        case 2:
-            //learn learn colour
-            cv::imshow("Select car", frame);
-            cv::setMouseCallback("Select car", CallBackFunc, NULL);
-            
-            cv::cvtColor(frame, this->colframe, cv::COLOR_BGR2HLS);
-            //Move to the next stage.
-            this->action++;
-            //Reset learning from the image.
-            this->mousepoint = 0;
-            break;
-        case 3://This stage waits till all the mouse is inputted.
-            if(this->mousepoint == 3){
-                this->action++;
-                this->mousepoint = 0;
-                cd->learnColor(this->colframe, this->mouseselect[0], this->mouseselect[1], this->mouseselect[2], this->mouseselect[3]);
-                
-                cv::rectangle(
-                this->colframe,
-                cv::Point(this->mouseselect[0], this->mouseselect[2]),
-                cv::Point(this->mouseselect[1], this->mouseselect[3]),
-                cv::Scalar(0, 255, 255)
-                );     
-                cv::imshow("Select car", this->colframe);
-            }
-            break;
-        default:
-            cv::Point average = this->Match(frame);
-            this->cc->update(average);
-            break;
+    if(!this->computerCar->getCarDetector()->hasLearnt()){
+        this->computerCar->getCarDetector()->learn(frame, this->keyPress, this->getMouseClick());
+    }else{
+        cv::Point* location = this->computerCar->getCarDetector()->detect(frame);
+        
+        //this->computerCar->carController;
+        
+        delete location;
     }
-    
-    
-    
+        
     //Show the video
     cv::imshow("window", frame);
     
     //Capture the key strokes.
     char key = cvWaitKey(10);
+    if(key == -1){
+        this->keyPress = 0;
+    }
     if (key == 27){ // ESC
         return -1;
     }
     if(key == 49){ // 1
-        this->action++;
+        this->keyPress = 1;
     }
     if(key == 50){ // 2
-        this->action--;
+        this->keyPress = 2;
+    }
+    if(key == 51){//3
+        this->computerCar->getCarDetector()->toggleOverlay();
     }
     
     return 0;
@@ -155,89 +136,18 @@ int Slotmanager::capture(cv::Mat& frame){
 //Called on mouse click when selecting colours.
 int Slotmanager::mouseClick(int x, int y) {
     std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
-    if(this->mousepoint == 0){
-        this->mouseselect[0] = x;
-        this->mouseselect[2] = y;
-        this->mousepoint = 2;
-    }else if(this->mousepoint == 2){
-        this->mouseselect[1] = x;
-        this->mouseselect[3] = y;
-        this->mousepoint = 3;
-    }
+
+    this->mousePress->x = x;
+    this->mousePress->y = y;
+    
     return 0;
 }
 
-//Called when doing the match testing.
-cv::Point Slotmanager::Match(cv::Mat& frame){
-    cv::Mat hlsframe;
-    cv::cvtColor(frame, hlsframe, cv::COLOR_BGR2HLS);
-    
-    double ytotal = 0;
-    double xtotal = 0;
-    double boxtotal = 0;
-    
-    int boxonlastx = 0;
-    int boxonlasty = 0;
-    for(int x = BOXLENGTH; x < frame.cols; x+= BOXJUMP){
-        for(int y = BOXLENGTH; y < frame.rows; y+= BOXJUMP){
-            
-            //This checks if the pixel is part of the mask or actually has changed.
-            if(this->bs->hasPixelChanged(x, y, hlsframe) == 0){                
-                cv::rectangle(
-                frame,
-                cv::Point(x, y),
-                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
-                cv::Scalar(255, 0, 255)//Purple
-                );  
-                continue;
-            }
-            
-            //Then check if the pixel matches if has changed.
-            if(this->cd->matchColor(hlsframe, x-BOXLENGTH, x, y-BOXLENGTH, y) < 0.5){
-                //Pixel has changed and matches colour.
-                cv::rectangle(
-                frame,
-                cv::Point(x, y),
-                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
-                cv::Scalar(0, 255, 255)//yellow
-                );
-
-                // There here means that if there is a positive box to the left
-                // or above this box this gets a weight rather than one.
-                // This should hopefully reduce the effect of outliers.
-                int multiplier = 1;
-                if((boxonlastx - BOXJUMP) == x){
-                    multiplier *= 100;
-                }
-                if((boxonlasty - BOXJUMP) == y){
-                    multiplier *= 100;
-                }
-                
-                boxonlastx = x;
-                boxonlasty = y;
-                
-                //Add the values to create the average.
-                ytotal += y * multiplier;
-                xtotal += x * multiplier;
-                boxtotal+=multiplier;
-            }else{
-                cv::rectangle(
-                frame,
-                cv::Point(x, y),
-                cv::Point(x - BOXLENGTH, y - BOXLENGTH),
-                cv::Scalar(255, 255, 0)//blue
-                );     
-            }
-
-        }
-        //
-    }
-    
-    //Calculate average and draw circle.
-    ytotal /= boxtotal;
-    xtotal /= boxtotal;
-    
-    cv::circle(frame, cv::Point(xtotal, ytotal), 4, cv::Scalar(255, 255, 255), 20);
-    
-    return cv::Point(xtotal, ytotal);
+// Returns a pointer to a point
+// resets the current mouse click values
+cv::Point* Slotmanager::getMouseClick(){
+    cv::Point* temp = new cv::Point(this->mousePress->x, this->mousePress->y);
+    this->mousePress->x = 0;
+    this->mousePress->y = 0;
+    return temp;
 }
