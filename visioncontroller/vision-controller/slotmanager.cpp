@@ -26,9 +26,11 @@ Slotmanager* g_pointer_slotmanager;
 
 //This is called when the mouse is clicked on the frame.
 void CallBackFunc(int event, int x, int y, int flags, void* userdata){
-    if  ( event == cv::EVENT_LBUTTONDOWN )
-    {
-        g_pointer_slotmanager->mouseClick(x, y);
+    if(event == cv::EVENT_LBUTTONDOWN ){
+        g_pointer_slotmanager->mouseClick(x, y, 1);
+    }
+    if(event == cv::EVENT_RBUTTONDOWN ){
+        g_pointer_slotmanager->mouseClick(x, y, 2);
     }
 }
 
@@ -68,11 +70,16 @@ int Slotmanager::init(Slotmanager* sm){
     this->humanCar = new Car('B', 0, this->cols, this->rows);
     
     //The point that will be used
-    this->mousePress = new cv::Point(0, 0);
+    this->mousePress = new mouseinteraction();
+    this->mousePress->mousePoint = new cv::Point(0, 0);
+    this->mousePress->button = 0;
     
     //Serial communication
     this->serialCom = new Serialcommunicator();
     this->serialCom->init();
+    
+    this->serialCom->addCar(this->computerCar);
+    this->serialCom->addCar(this->humanCar);
     
     int iret1 = pthread_create( &this->serialThread, NULL, &serialCommunicatorWrap, this->serialCom);
     if(iret1){
@@ -90,12 +97,17 @@ int Slotmanager::update(){
     if(this->capture(frame) != 0){return -1;}
     
     if(!this->computerCar->getCarDetector()->hasLearnt()){
-        this->computerCar->getCarDetector()->learn(frame, this->keyPress, this->getMouseClick());
+        int move = this->computerCar->getCarDetector()->learn(frame, this->keyPress, this->getMouseClick());
+        if(move == 1){
+            this->computerCar->getCarController()->setBaseSpeed();
+        }
     }else{
-        cv::Point* location = this->computerCar->getCarDetector()->detect(frame);
-        
-        //this->computerCar->carController;
-        
+        mouseinteraction* mp = this->getMouseClick();
+        cv::Point* location = this->computerCar->getCarDetector()->detect(frame, mp);
+        this->computerCar->getCarController()->update(location, frame, mp);
+
+        delete mp->mousePoint;
+        delete mp;
         delete location;
     }
         
@@ -134,20 +146,26 @@ int Slotmanager::capture(cv::Mat& frame){
 }
 
 //Called on mouse click when selecting colours.
-int Slotmanager::mouseClick(int x, int y) {
+int Slotmanager::mouseClick(int x, int y, int button) {
     std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
 
-    this->mousePress->x = x;
-    this->mousePress->y = y;
+    this->mousePress->mousePoint->x = x;
+    this->mousePress->mousePoint->y = y;
+    this->mousePress->button = button;
     
     return 0;
 }
 
 // Returns a pointer to a point
 // resets the current mouse click values
-cv::Point* Slotmanager::getMouseClick(){
-    cv::Point* temp = new cv::Point(this->mousePress->x, this->mousePress->y);
-    this->mousePress->x = 0;
-    this->mousePress->y = 0;
-    return temp;
+mouseinteraction* Slotmanager::getMouseClick(){
+    mouseinteraction* mp = new mouseinteraction; 
+    mp->mousePoint = new cv::Point(this->mousePress->mousePoint->x, this->mousePress->mousePoint->y);;
+    mp->button = this->mousePress->button;
+    
+    this->mousePress->mousePoint->x = 0;
+    this->mousePress->mousePoint->y = 0;
+    this->mousePress->button = 0;
+    
+    return mp;
 }

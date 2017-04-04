@@ -24,6 +24,11 @@ class Carcontroller;
 struct dead_reckon_interval;
 class Serialcommunicator;
 
+struct mouseinteraction{
+    cv::Point* mousePoint;
+    int button;
+};
+
 class Slotmanager {
 public:
     Slotmanager();
@@ -31,10 +36,10 @@ public:
     int init(Slotmanager* sm);
     //Called each update.
     int update();
-    int mouseClick(int x, int y);
+    int mouseClick(int x, int y, int button);
 private:
     int capture(cv::Mat& frame);
-    cv::Point* getMouseClick();
+    mouseinteraction* getMouseClick();
     
     //Size of image.
     int cols;
@@ -42,7 +47,7 @@ private:
     cv::VideoCapture* cap;
     
     //User interaction values
-    cv::Point* mousePress;
+    mouseinteraction* mousePress;
     int keyPress;
     
     //serial communicator
