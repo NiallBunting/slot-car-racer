@@ -40,6 +40,7 @@ private:
     
     //parse the text received
     int parseBuffer(string str); 
+    int sendData(char id, string str);
     
     //Have to know what cars to update
     Car* cars[MAXAMOUNTOFCARS];
@@ -47,6 +48,9 @@ private:
     
     //change this value to quit
     int quitvalue;
+    
+    //last sent
+    std::chrono::time_point<clck> timeStamp;
 };
 
 #endif /* SERIALCOMMUNICATOR_H */
