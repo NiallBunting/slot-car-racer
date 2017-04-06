@@ -31,11 +31,15 @@ public:
     //Trains the background on the images.
     int trainBackground(cv::Mat& frame);
     int maskCreate(cv::Mat& frame);
+    int maskMouse(cv::Point* mousePoint, int button);
+    int removeMaskPoint(cv::Point* point);
 private:
     int cols;
     int rows;
     BackgroundPixel* background;
     int hasPixelChanged(int x, int y, int value);
+    int fillTrack(cv::Point* point);
+    int floodFill(int x, int y);
 };
 
 #endif /* BACKGROUNDSUBTRACTION_H */

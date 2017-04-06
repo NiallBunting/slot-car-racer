@@ -30,6 +30,8 @@ int Backgroundsubtraction::init(int cols, int rows) {
         this->background[i].low = -1;
         this->background[i].mask = 0;
     }
+    
+    return 0;
 }
 
 // This trains the background by increasing the min and max values for 
@@ -107,7 +109,7 @@ int Backgroundsubtraction::maskCreate(cv::Mat& frame){
 //Checks if the pixel is in the mask and if value has changed.
 int Backgroundsubtraction::hasPixelChanged(int x, int y, int value){
     
-    int i = (y * this->cols) + x;
+    int i = (y * this->rows) + x;
     
     if(this->background[i].mask == 1){
         if(this->background[i].high < value || this->background[i].low > value){
@@ -123,4 +125,74 @@ int Backgroundsubtraction::hasPixelChanged(int x, int y, int value){
 int Backgroundsubtraction::hasPixelChanged(int x, int y, cv::Mat& frame){
         int color = frame.at<cv::Vec3b>(cv::Point(x,y)).val[COLORCHANNEL];
         return this->hasPixelChanged(x, y, color);
+}
+
+//allows the mouse to interact with the mask
+int Backgroundsubtraction::maskMouse(cv::Point* point, int button){
+    if(point->x < 5){
+        point->x = 5;
+    }
+    if(point->y < 5){
+        point->y = 5;
+    }
+    
+    if(button == 1){ //Mouse click to add mask
+        button = 1;
+    }
+    if(button == 2){ //Does the fill
+        this->fillTrack(point);
+        return 0;
+    }
+    
+    int i;
+    for(int x = point->x - 5; x < point->x + 5; x++){
+        for(int y = point->y - 5; y < point->y + 5; y++){
+            i = (y * this->rows) + x;
+
+            this->background[i].mask = button;
+        }
+    }
+    return 0;
+}
+
+//Removes a single point from the mask
+int Backgroundsubtraction::removeMaskPoint(cv::Point* point){
+    int i = (point->y * this->rows) + point->x;
+    this->background[i].mask = 0;
+    return 0;
+}
+
+//Does the fill mask and removes rest
+int Backgroundsubtraction::fillTrack(cv::Point* point){
+    //set mask to three to show it has changed
+    for(int i = 0; i < (this->cols * this->rows); i++){
+        if(this->background[i].mask == 1){
+            this->background[i].mask = 2;
+        }
+    }
+    
+    this->floodFill(point->x, point->y);
+    
+    //remove all threes as not been touched
+    for(int i = 0; i < (this->cols * this->rows); i++){
+        if(this->background[i].mask == 2){
+            this->background[i].mask = 0;
+        }
+    }
+}
+
+//Four way flood fill
+int Backgroundsubtraction::floodFill(int x, int y){
+    int i = (y * this->rows) + x;
+    
+    if(this->background[i].mask != 2){return 0;}
+    
+    this->background[i].mask = 1;
+    
+    this->floodFill(x+1, y);
+    this->floodFill(x-1, y);
+    this->floodFill(x, y+1);
+    this->floodFill(x, y-1);
+    
+    return 0;
 }

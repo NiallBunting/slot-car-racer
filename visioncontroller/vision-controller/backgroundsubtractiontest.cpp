@@ -20,74 +20,141 @@
  * Simple C++ Test Suite
  */
 
-//train setup
-//test limits get expanded
-//test correct background returned
-void testhaspixelchanged(){
-    std::cout << "backgroundsubtractiontest test" << std::endl;
-    
-    int fail = 0;
+const static int BACKGROUNDTSIZE = 20;
 
-    //Set up
-    cv::Mat3f mat(20, 20);
+Backgroundsubtraction* testCreateBackground(){
+    std::cout << "backgroundsubtractiontest test" << std::endl;
+
     Backgroundsubtraction* bs = new Backgroundsubtraction();
-    bs->init(20, 20);
-    //Change pixel value
-    cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(3,3));
-    color.val[0] = color.val[1] = color.val[2] = 0;
-    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    int returnVal = bs->init(BACKGROUNDTSIZE, BACKGROUNDTSIZE);
     
-    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    if (returnVal != 0){
+       std::cout << "%TEST_FAILED% time=0 testname=createBackground (backgroundsubtractiontest) message=Did not return 0." << std::endl;
+    }
+    
+    return bs;
+}
+
+
+void testTrainBackground(Backgroundsubtraction* bs, int value){
+    cv::Mat3f mat(BACKGROUNDTSIZE, BACKGROUNDTSIZE);
+    
+    for(int x = 0; x < BACKGROUNDTSIZE; x++){
+        for(int y = 0; y < BACKGROUNDTSIZE; y++){
+            cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(x,y));
+            color.val[0] = color.val[1] = color.val[2] = value;
+            mat.at<cv::Vec3b>(cv::Point(x,y)) = color;
+        }
+    }
+    
+    cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(BACKGROUNDTSIZE/2,BACKGROUNDTSIZE/2));
+    
+    if (color.val[0] != value){
+       std::cout << "%TEST_FAILED% time=0 testname=trainBackground (backgroundsubtractiontest) message=Colour not correct." << std::endl;
+    }
     
     bs->trainBackground(mat);
-    color = mat.at<cv::Vec3b>(cv::Point(3,3));
-    color.val[0] = color.val[1] = color.val[2] = 10;
-    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+}
+
+
+//Got to create mask first
+void testPixelChanged(Backgroundsubtraction* bs, int value, int test){
+    cv::Mat3f mat(BACKGROUNDTSIZE, BACKGROUNDTSIZE);
     
-    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    for(int x = 0; x < BACKGROUNDTSIZE; x++){
+        for(int y = 0; y < BACKGROUNDTSIZE; y++){
+            cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(x,y));
+            color.val[0] = color.val[1] = color.val[2] = value;
+            mat.at<cv::Vec3b>(cv::Point(x,y)) = color;
+        }
+    }
     
-    bs->trainBackground(mat);
-    //Set up mask
-    color = mat.at<cv::Vec3b>(cv::Point(3,3));
-    color.val[0] = color.val[1] = color.val[2] = 53;
-    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
+    if(test == 0){
+        if(bs->hasPixelChanged(BACKGROUNDTSIZE/5, BACKGROUNDTSIZE/5, mat)){
+            return;
+        }else{
+            std::cout << "%TEST_FAILED% time=0 testname=testpixelchanged (backgroundsubtractiontest) message=Pixel not changed." << std::endl;
+        }
+    }else{
+        if(!bs->hasPixelChanged(BACKGROUNDTSIZE/5, BACKGROUNDTSIZE/5, mat)){
+            return;
+        }else{
+            std::cout << "%TEST_FAILED% time=0 testname=testpixelchanged2 (backgroundsubtractiontest) message=Pixel not changed." << std::endl;
+        }
+    }
+}
+
+void testMaskCreate(Backgroundsubtraction* bs, int value){
+    cv::Mat3f mat(BACKGROUNDTSIZE, BACKGROUNDTSIZE);
     
-    std::cout << (int)mat.at<cv::Vec3b>(cv::Point(0,0)).val[2] << " A" << std::endl;
+    for(int x = 0; x < BACKGROUNDTSIZE; x++){
+        for(int y = 0; y < BACKGROUNDTSIZE; y++){
+            cv::Vec3b color = mat.at<cv::Vec3b>(cv::Point(x,y));
+            color.val[0] = color.val[1] = color.val[2] = value;
+            mat.at<cv::Vec3b>(cv::Point(x,y)) = color;
+        }
+    }
     
     bs->maskCreate(mat);
     
-    color = mat.at<cv::Vec3b>(cv::Point(3,3));
-    color.val[0] = color.val[1] = color.val[2] = 11;
-    mat.at<cv::Vec3b>(cv::Point(0,0)) = color; 
-    
-    //Check pixel the same
-    if(bs->hasPixelChanged(0, 0, mat) != 1){fail = 1;}
-    std::cout << "hello" << bs->hasPixelChanged(3, 3, mat) << std::endl;
-    
-    //Change pixel value
-    color = mat.at<cv::Vec3b>(cv::Point(0,0));
-    color.val[0] = color.val[1] = color.val[2] = 10;
-    mat.at<cv::Vec3b>(cv::Point(0,0)) = color;
-    
-    //Check now different
-    if(bs->hasPixelChanged(0, 0, mat) != 0){fail = 2;}
-    
-    if (fail != 0){
-       std::cout << "%TEST_FAILED% time=0 testname=test (backgroundsubtractiontest) message=erm wrong" << fail << std::endl;
-    }
-    
 }
+void testMaskMouse(Backgroundsubtraction* bs, int x, int y, int action){
+    bs->maskMouse(new cv::Point(x, y), action);
+}
+
+void testRemoveMaskPoint(Backgroundsubtraction* bs){
+    int size = BACKGROUNDTSIZE/5;
+    bs->removeMaskPoint(new cv::Point(size, size));
+}
+
 
 int main(int argc, char** argv) {
     std::cout << "%SUITE_STARTING% backgroundsubtractiontest" << std::endl;
     std::cout << "%SUITE_STARTED%" << std::endl;
 
-    std::cout << "%TEST_STARTED% test2 (backgroundsubtractiontest)\n" << std::endl;
-    testhaspixelchanged();
-    std::cout << "%TEST_FINISHED% time=0 test2 (backgroundsubtractiontest)" << std::endl;
+    std::cout << "%TEST_STARTED% createbackground (backgroundsubtractiontest)\n" << std::endl;
+    Backgroundsubtraction* backsub = testCreateBackground();
+    std::cout << "%TEST_FINISHED% time=0 createbackground (backgroundsubtractiontest)" << std::endl;
 
+    std::cout << "%TEST_STARTED% trainbackground (backgroundsubtractiontest)\n" << std::endl;
+    testTrainBackground(backsub, 6);
+    std::cout << "%TEST_FINISHED% time=0 trainbackground (backgroundsubtractiontest)" << std::endl;
+    
+    std::cout << "%TEST_STARTED% trainbackground (backgroundsubtractiontest)\n" << std::endl;
+    testTrainBackground(backsub, 8);
+    std::cout << "%TEST_FINISHED% time=0 trainbackground (backgroundsubtractiontest)" << std::endl;
+    
+    std::cout << "%TEST_STARTED% maskcreate (backgroundsubtractiontest)\n" << std::endl;
+    testMaskCreate(backsub, 1);
+    std::cout << "%TEST_FINISHED% time=0 maskcreate (backgroundsubtractiontest)" << std::endl;
+    
+    //This one should say it has changed
+    std::cout << "%TEST_STARTED% testpixelchanged (backgroundsubtractiontest)\n" << std::endl;
+    testPixelChanged(backsub, 9, 0);
+    std::cout << "%TEST_FINISHED% time=0 testpixelchanged (backgroundsubtractiontest)" << std::endl;
+    
+    //this one say not changed
+    std::cout << "%TEST_STARTED% testpixelchanged2 (backgroundsubtractiontest)\n" << std::endl;
+    testPixelChanged(backsub, 7, 1);
+    std::cout << "%TEST_FINISHED% time=0 testpixelchanged2 (backgroundsubtractiontest)" << std::endl;
+    
+    testRemoveMaskPoint(backsub);
+    
+    //say not changed even though should have because not in mask
+    std::cout << "%TEST_STARTED% testpixelchanged2 (backgroundsubtractiontest)\n" << std::endl;
+    testPixelChanged(backsub, 10, 1);
+    std::cout << "%TEST_FINISHED% time=0 testpixelchanged2 (backgroundsubtractiontest)" << std::endl;
+    
+    testMaskMouse(backsub, BACKGROUNDTSIZE/5, BACKGROUNDTSIZE/5, 1);
+            
+    //will say changed again
+    std::cout << "%TEST_STARTED% testpixelchanged2 (backgroundsubtractiontest)\n" << std::endl;
+    testPixelChanged(backsub, 10, 0);
+    std::cout << "%TEST_FINISHED% time=0 testpixelchanged2 (backgroundsubtractiontest)" << std::endl;
+    
     std::cout << "%SUITE_FINISHED% time=0" << std::endl;
 
+    delete backsub;
     return (EXIT_SUCCESS);
 }
 
