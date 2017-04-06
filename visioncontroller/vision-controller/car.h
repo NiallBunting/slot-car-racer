@@ -6,7 +6,7 @@
 
 /* 
  * File:   car.h
- * Author: nib28
+ * Author: Niall Bunting
  *
  * Created on 30 March 2017, 16:29
  */
@@ -19,6 +19,7 @@
 #include <chrono> /* Time related definions */
 
 class Carcontroller;
+class Cardetector;
 struct dead_reckon_interval;
 typedef std::chrono::high_resolution_clock clck;
 
@@ -49,6 +50,8 @@ private:
     Carcontroller* carController;
     Cardetector* carDetector;
     dead_reckon_interval* deadReckonInterval;// Future speeds
+    
+    int locked;
 };
 
 #endif /* CAR_H */

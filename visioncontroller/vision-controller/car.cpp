@@ -6,7 +6,7 @@
 
 /* 
  * File:   car.cpp
- * Author: nib28
+ * Author: Niall Bunting
  * 
  * Created on 30 March 2017, 16:29
  */
@@ -14,6 +14,7 @@
 #include "car.h"
 
 Car::Car(char id, int mode, int rows, int cols) {
+    this->locked = 0;
 
     this->id = id;
     this->mode = mode;
@@ -24,7 +25,13 @@ Car::Car(char id, int mode, int rows, int cols) {
     this->currentSpeed = 0;
     
     this->deadReckonInterval = new dead_reckon_interval();
-    
+    this->deadReckonInterval->timeStamp = clck::now();
+    for(int i = 0; i < this->deadReckonInterval->size; i++){
+        this->deadReckonInterval->speed[i] = 0;
+    }
+    this->deadReckonInterval->locked = 0;
+    this->deadReckonInterval->updateCount = 0;
+
     //Set this up if computer
     if(mode == 1){
         //A car detector
@@ -51,14 +58,21 @@ Cardetector* Car::getCarDetector(){
 }
 
 dead_reckon_interval* Car::getInterval(){
+    while(this->locked > 0){} //Spin lock
     return this->deadReckonInterval;
 }
 
 int Car::setInterval(dead_reckon_interval* di){
-    delete this->deadReckonInterval;
-    di->timeStamp = clck::now();
-    this->deadReckonInterval = di;
+    while(this->locked > 0){} // Spin lock
+    this->locked++;  
     
+    this->deadReckonInterval->timeStamp = clck::now();
+    
+    for(int i = 0; i < this->deadReckonInterval->size; i++){
+        this->deadReckonInterval->speed[i] = di->speed[i];
+    }
+    
+    this->locked--;
     return 0;
 }
 
@@ -92,6 +106,9 @@ int Car::gatePassed(){
 }
 
 int Car::offTrack(){
+    if(this->onTrack != 0){
+        std::cout << this->id << ": Is off the track." << std::endl;
+    }
     this->onTrack = 0;
     return 0;
 }
