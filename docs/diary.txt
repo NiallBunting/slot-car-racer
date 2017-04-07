@@ -51,3 +51,13 @@ also opens up the possiblity of dead reckoning.
 02-17
 Got background subtraction working.
 Now need to focus on colour correction.
+04-17
+Ardino
+Arduino-Modules-L298N-Dual-H-Bridge-Motor-Controll
+4 Tracking Sensor Module YL-70
+sj cam combatable camera (sports hd dv)
+
+Linux Mint 17.3 Cinnamon 64-bit
+4 Gb mem
+Intel(c) CoreTM 2 Duo CPU E8400 @ 3.00GHz * 2
+Graphics: Intel Corporation 4 Series Chipset Integrated Graphics Controller

@@ -1,27 +1,37 @@
-Protocol to talk to hardware:
+Current protocol
+================
 
-The hardware should recieve commands made of two bytes. The first byte should be the
-letter that represents a track. The second should represent the speed for the car to go
-(0-255). This should allow the computer to control the cars to a reasonable degree of
-accuracy whilst keeping the overhead as low as possible.
+All messages are sent using characters.
 
-Eg:
-B255 - Car B full speed.
-M0 - Car M stop.
+The A/B refers to which track the computer should control.
 
-Protocol to talk to computer:
+Computer > Arduino
+------------------
 
-The information the hardware has to return is the speed through the speed trap and the current
-draw by each track. This should also follow the two byte format.
+A/B,'M'ODE,modeval\n
 
-For the speed it should be made up of the car number and the amount of milliseconds it takes.
-B81 - Car B 81 milliseconds.
-M40 - Car M 40 milliseconds.
+Sets the mode so the arduino knows how to control.
+Mode: 0 - human, 1 - computer
 
+A/B,'P'WM,pwmval\n
 
-NOT SURE ABOUT THIS YET.
-The hardware should return values when the current draw hits 0. This depends upon how often this happens,
-if this can indicate the car is off the track. Or how fast the car is going.
+pwmval: 0 - 255 (even though physical limits are 60+ and 225 is safe)
+0 is not moving.
+This is to control the pwm values.
 
-b0 - Car B off the track.
-m0 - Car M off the track.
+A/B,'G'OTOGATE\n
+
+Brings both cars to the start.
+
+Arduino > Computer
+------------------
+
+A/B,'N'OCARPRESENT\n
+
+Tells the computer that the current draw is 0 when voltage applied.
+This will check over the course of a few interations.
+
+A/B,'G'ATEPASSED,laptime\n
+
+This tells the computer when the ardunio has passed the gate and the
+laptime this was completed in.
