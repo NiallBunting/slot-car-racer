@@ -16,7 +16,10 @@
 
 #include "backgroundsubtraction.h"
 #include "colordetector.h"
+#include "slotmanager.h"
 #include <cv.h>
+
+struct mouseinteraction;
 
 const int BOXLENGTH = 6;
 const int BOXJUMP = 7;
@@ -30,8 +33,8 @@ public:
     virtual ~Cardetector();
     
     int hasLearnt();
-    int learn(cv::Mat& frame, int key, cv::Point* click);
-    cv::Point* detect(cv::Mat& frame);
+    int learn(cv::Mat& frame, int key, mouseinteraction* mp);
+    cv::Point* detect(cv::Mat& frame, mouseinteraction* mp);
     
     int toggleOverlay();
 private:

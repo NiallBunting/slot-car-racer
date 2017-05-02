@@ -24,6 +24,7 @@ Car::Car(char id, int mode, int rows, int cols) {
     this->passedGate = 0;
     this->currentSpeed = 0;
     
+    //Set up initial dead reckoning.
     this->deadReckonInterval = new dead_reckon_interval();
     this->deadReckonInterval->timeStamp = clck::now();
     for(int i = 0; i < this->deadReckonInterval->size; i++){
@@ -62,6 +63,7 @@ dead_reckon_interval* Car::getInterval(){
     return this->deadReckonInterval;
 }
 
+//Set the dead reckoning for the point detected for the car.
 int Car::setInterval(dead_reckon_interval* di){
     while(this->locked > 0){} // Spin lock
     this->locked++;  
@@ -88,6 +90,7 @@ int Car::isOnTrack(){
     return this->onTrack;
 }
 
+//Set passed gate to 0 and return value
 int Car::hasPassedGate(){
     int temp = this->passedGate;
     this->passedGate = 0;
@@ -99,6 +102,7 @@ int Car::setCurrentSpeed(int speed){
     return 0;
 }
 
+//Called when gate is passed, also meaning car is on track.
 int Car::gatePassed(){
     this->passedGate++;
     this->onTrack = 1;

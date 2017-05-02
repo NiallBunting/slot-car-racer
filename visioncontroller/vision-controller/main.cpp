@@ -11,9 +11,11 @@
 int main(int argc, char* argv[])
 {
     
+    //Slot manager setup
     Slotmanager* sm = new Slotmanager();
     if(sm->init(sm) != 0){return 1;}
     
+    //Inf loop that updates the program.
     for(;;){
         if(sm->update() != 0){break;}
     }

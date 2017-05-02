@@ -14,14 +14,16 @@
 #ifndef CARCONTROLLER_H
 #define CARCONTROLLER_H
 
+#include "slotmanager.h"
 #include <cv.h> /* include openCv */
 #include "serialcommunicator.h"
 #include <chrono> /* Time related definions */
 #include "car.h"
 
 class Car;
-
+struct mouseinteraction;
 typedef std::chrono::high_resolution_clock clck;
+int const POINTHISTORY = 5;
 
 struct dead_reckon_interval{
     static const int size = 5;//The size for the array
@@ -38,7 +40,9 @@ public:
     Carcontroller();
     virtual ~Carcontroller();
     int init(Car* c, int columns, int rows);
-    int update(cv::Point* point);
+    int update(cv::Point* point, mouseinteraction* mp);
+    int update(cv::Point* point, cv::Mat& frame, mouseinteraction*  mp);
+    int setBaseSpeed();
 private:
     int columns;
     int rows;
@@ -51,11 +55,16 @@ private:
     
     int safespeed;
     int safespeedset;
-    dead_reckon_interval* lastbox;
+    
+    dead_reckon_interval* lastbox[POINTHISTORY];
+    int lastboxCount;
+    int lastboxSet;//Makes sure these have been set
+    int offTrack;
     
     int setSpeed(int speed);
     int setSpeed(dead_reckon_interval* s);
     int speedToVoltage(int speed);
+    int lockBox();
 };
 
 #endif /* CARCONTROLLER_H */

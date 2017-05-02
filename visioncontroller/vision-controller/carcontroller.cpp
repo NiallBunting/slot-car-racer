@@ -13,9 +13,12 @@
 
 #include "carcontroller.h"
 #include <pthread.h>
+#include <cv.h>
 
-const int BASESPEED = 150;
+const int BASESPEED = 125;
 const int BOXSIZE = 30;
+const int MAXSPEED = 255;
+const int LEARNINGTESTS = 5; //The amount of times the car can come off
 
 Carcontroller::Carcontroller() {
 }
@@ -42,44 +45,101 @@ int Carcontroller::init(Car* c, int columns, int rows){
     
     this->safespeed = BASESPEED;
     this->safespeedset = 0;
-        
-    //set an inital speed for learning
-    this->setSpeed(BASESPEED);
+    
+    this->lastboxCount = 0;
+    this->lastboxSet = 0;
 }
 
-int Carcontroller::update(cv::Point* point){
-    
-    //is off the track
-    if(!this->thisCar->isOnTrack()){
-        this->setSpeed(BASESPEED);
+int Carcontroller::update(cv::Point* point, cv::Mat& frame, mouseinteraction* mp){
+    for(int x = 0; x < this->rows; x+=BOXSIZE){
+        for(int y = 0; y < this->columns; y+=BOXSIZE){  
+
+            int i = ((y/BOXSIZE) * (this->rows/BOXSIZE)) + x/BOXSIZE;
+            int c = this->boxes[i].speed[0];
+
+            if(c == BASESPEED || c == 0){continue;}
+
+            c = (((double)c - (double)this->safespeed) / (255.0 - (double)this->safespeed)) * 255.0;
+
+            if(this->boxes[i].locked > LEARNINGTESTS){
+                cv::rectangle(
+                frame,
+                cv::Point(x, y),
+                cv::Point(x + BOXSIZE, y + BOXSIZE),
+                cv::Scalar(255, c, c)
+                );
+            }else{
+                cv::rectangle(
+                frame,
+                cv::Point(x, y),
+                cv::Point(x + BOXSIZE, y + BOXSIZE),
+                cv::Scalar(c, c, c)
+                );
+            }
+        }
     }
-    
+        
+    this->update(point, mp);
+}
+
+int Carcontroller::update(cv::Point* point, mouseinteraction* mp){
+        
     if(this->safespeedset == 0){
+        
+        if(this->thisCar->getInterval()->speed[0] == 0){
+            this->setSpeed(BASESPEED);
+        }
           
         //Drive around slowly increasing the speed
         if(this->thisCar->hasPassedGate()){
-            this->safespeed++;
+            this->safespeed+=3;
             this->setSpeed(this->safespeed);
         }
         //Learn track here as well -- in box set to safe speed
         
         //Keep going till come off track
-        if(!this->thisCar->isOnTrack()){
-            this->safespeed *= 0.97;
+        if(!this->thisCar->isOnTrack() || this->safespeed >= MAXSPEED){
+            this->safespeed *= 0.90;
             this->safespeedset = 1;
             std::cout << "Final max speed: " << this->safespeed << std::endl;
         }
     }else{
-
-        int i = ((point->y/BOXSIZE)  * (this->columns/BOXSIZE)) + (point->x/BOXSIZE);
+        if(mp->mousePoint->x > 0 && mp->mousePoint->y > 0 && mp->button == 1){
+            int mousei = ((mp->mousePoint->y/BOXSIZE)  * (this->rows/BOXSIZE)) + (mp->mousePoint->x/BOXSIZE);
+            this->boxes[mousei].locked += 100;
+        }
+        
+        
+        //is off the track
+        if(!this->thisCar->isOnTrack()){
+            if(this->offTrack == 0){
+                this->setSpeed(BASESPEED);
+                this->lockBox();
+                this->offTrack = 1;
+            }
+            return 0;
+        }else{
+            this->offTrack = 0;
+        }
+        
+        //This means in the top corner
+        if(point->x == 0 && point->y == 0){return 1;}
+        
+        int i = ((point->y/BOXSIZE)  * (this->rows/BOXSIZE)) + (point->x/BOXSIZE);
     
         //Check if the box is locked
-        if(this->boxes[i].locked == 0){
+        if(this->boxes[i].locked < LEARNINGTESTS){
             this->updateboxspeeds(&this->boxes[i]);
-            this->setSpeed(&this->boxes[i]);
-            this->lastbox = &this->boxes[i];
-        }else{
-            this->setSpeed(&this->boxes[i]);
+        }
+        
+        this->setSpeed(&this->boxes[i]);
+        
+        this->lastbox[this->lastboxCount] = &this->boxes[i];
+        this->lastboxCount++;
+        
+        if(this->lastboxCount >= POINTHISTORY){
+            this->lastboxCount = 0;
+            this->lastboxSet = 1;
         }
         
     }
@@ -87,14 +147,32 @@ int Carcontroller::update(cv::Point* point){
     return 0;
 }
 
+//locks the box and reduces the max
+int Carcontroller::lockBox(){
+    int location;
+    
+    if(this->lastboxSet == 0){return 0;}
+    //loop through all the points
+    for(int i = 0; i < POINTHISTORY; i++){
+        location = i + this->lastboxCount;
+        if(location >= POINTHISTORY){location -= 5;}
+        
+        //Counts back from the back, first also gets its first updated
+        for(int j = this->lastbox[location]->size - 1; j >= i; j--){
+            this->lastbox[location]->speed[j] *= 0.9 + (0.1 * i);
+        }
+        
+        this->lastbox[location]->locked++;
+    }
+    return 0;
+}
+
+//Update box speeds
 int Carcontroller::updateboxspeeds(dead_reckon_interval* s){
     
-    if(s->locked == 1){return 1;}
-    
-    //Increase speeds
     s->speed[s->updateCount]++;
     s->updateCount++;
-    
+
     //Reset increaser if reached size.
     if(s->updateCount >= s->size){
         s->updateCount = 0;
@@ -103,6 +181,7 @@ int Carcontroller::updateboxspeeds(dead_reckon_interval* s){
     return 0;
 }
 
+//Sets speed taking a single value
 int Carcontroller::setSpeed(int speed){
     
     //Create new struct
@@ -122,7 +201,11 @@ int Carcontroller::setSpeed(int speed){
     this->thisCar->setInterval(volts);
 }
 
+//Sets the speed taking a dead reckon
 int Carcontroller::setSpeed(dead_reckon_interval* s){
+    
+    //This has been set to be ignored
+    if(s->locked == 2){return 0;}
     
     //Create new struct
     dead_reckon_interval* volts = new dead_reckon_interval();
@@ -132,6 +215,7 @@ int Carcontroller::setSpeed(dead_reckon_interval* s){
         //Make sure over minimum speed
         if(this->safespeed > s->speed[i]){
             volts->speed[i] = this->speedToVoltage(this->safespeed);
+            s->speed[i] = this->safespeed;
         }else{
             volts->speed[i] = this->speedToVoltage(s->speed[i]);
         }
@@ -139,10 +223,21 @@ int Carcontroller::setSpeed(dead_reckon_interval* s){
 
     //Set dead reckoning
     this->thisCar->setInterval(volts);
+    delete volts;
+    return 0;
 }
 
+//Should change the speed to a voltage value
 int Carcontroller::speedToVoltage(int speed){
-    //This needs to know the speed error can be calculated later.    
+    //This needs to know the speed error can be calculated later.
+    if(speed < 0){speed = 0;}
+    if(speed > MAXSPEED){speed = MAXSPEED;}
     //PID controller
     return speed;
+}
+
+//Public allows the learning algorithm to start the car
+int Carcontroller::setBaseSpeed(){
+    this->setSpeed(BASESPEED);
+    return 0;
 }

@@ -45,7 +45,13 @@ int Cardetector::hasLearnt(){
     return this->learnFinished;
 }
 
-int Cardetector::learn(cv::Mat& frame, int key, cv::Point* click){
+//Learns what the track looks like.
+//This trains both the background subtraction and colour detector.
+//Takes a frame from the camera and a mouse interation and a keyboard key.
+int Cardetector::learn(cv::Mat& frame, int key, mouseinteraction* mp){
+    
+    //0 means stop, 1 means move
+    int returnVal = 0;
     
     if(key == 1){
         this->learnStage++;
@@ -64,7 +70,12 @@ int Cardetector::learn(cv::Mat& frame, int key, cv::Point* click){
             //learn mask
             cv::cvtColor(frame, frame, cv::COLOR_BGR2HLS);
             GaussianBlur(frame, frame, cv::Size(7,7), 1.5, 1.5);
+            cv::setMouseCallback("window", CallBackFunc, NULL);
+            if(mp->mousePoint->x > 0 && mp->mousePoint->y > 0){
+                bs->maskMouse(mp->mousePoint, mp->button);
+            }
             bs->maskCreate(frame);
+            returnVal = 1;
             break;
         case 2:
             //learn learn colour
@@ -78,8 +89,8 @@ int Cardetector::learn(cv::Mat& frame, int key, cv::Point* click){
         case 3://This stage waits till all the mouse is inputted.
             if(this->colourBoxCount < 2){
                 //if clicks are not finished and over 0 input them
-                if(click->x > 0 && click->y > 0){
-                    this->colorBox[this->colourBoxCount] = new cv::Point(click->x, click->y);
+                if(mp->mousePoint->x > 0 && mp->mousePoint->y > 0 && mp->button == 1){
+                    this->colorBox[this->colourBoxCount] = new cv::Point(mp->mousePoint->x, mp->mousePoint->y);
                     this->colourBoxCount++;
                 }
             }else{
@@ -105,11 +116,17 @@ int Cardetector::learn(cv::Mat& frame, int key, cv::Point* click){
             break;
     }
     
-    delete click;
+    delete mp->mousePoint;
+    delete mp;
     
+    return returnVal;
 }
 
-cv::Point* Cardetector::detect(cv::Mat& frame){
+//This detects the car.
+//Takes in a frame from the camera.
+//Takes in a mouse interaction.
+//passes the frame through background subtraction and colour detection.
+cv::Point* Cardetector::detect(cv::Mat& frame, mouseinteraction* mp){
     cv::Mat hlsframe;
     cv::cvtColor(frame, hlsframe, cv::COLOR_BGR2HLS);
     
@@ -119,8 +136,17 @@ cv::Point* Cardetector::detect(cv::Mat& frame){
     
     int boxonlastx = 0;
     int boxonlasty = 0;
-    for(int x = BOXLENGTH; x < frame.cols; x+= BOXJUMP){
-        for(int y = BOXLENGTH; y < frame.rows; y+= BOXJUMP){
+    for(int x = 0; x < frame.cols - BOXLENGTH; x+= BOXJUMP){
+        for(int y = 0; y < frame.rows - BOXLENGTH; y+= BOXJUMP){
+            
+            //Remove point if right clicked
+            if(mp->button == 2){//check right button
+                if(mp->mousePoint->x >= x && mp->mousePoint->x < x+BOXLENGTH){
+                    if(mp->mousePoint->y >= y && mp->mousePoint->y < y+BOXLENGTH){
+                        this->bs->removeMaskPoint(new cv::Point(x, y));
+                    }
+                }
+            }
             
             //This checks if the pixel is part of the mask or actually has changed.
             if(this->bs->hasPixelChanged(x, y, hlsframe) == 0){
@@ -128,7 +154,7 @@ cv::Point* Cardetector::detect(cv::Mat& frame){
                     cv::rectangle(
                     frame,
                     cv::Point(x, y),
-                    cv::Point(x - BOXLENGTH, y - BOXLENGTH),
+                    cv::Point(x + BOXLENGTH, y + BOXLENGTH),
                     cv::Scalar(255, 0, 255)//Purple
                     );  
                 }
@@ -136,13 +162,13 @@ cv::Point* Cardetector::detect(cv::Mat& frame){
             }
             
             //Then check if the pixel matches if has changed.
-            if(this->cd->matchColor(hlsframe, x-BOXLENGTH, x, y-BOXLENGTH, y) < 0.5){
+            if(this->cd->matchColor(hlsframe, x, x+BOXLENGTH, y, y+BOXLENGTH) < 0.5){
                 //Pixel has changed and matches colour.
                 if(this->overlay){
                     cv::rectangle(
                     frame,
                     cv::Point(x, y),
-                    cv::Point(x - BOXLENGTH, y - BOXLENGTH),
+                    cv::Point(x + BOXLENGTH, y + BOXLENGTH),
                     cv::Scalar(0, 255, 255)//yellow
                     );
                 }
@@ -170,7 +196,7 @@ cv::Point* Cardetector::detect(cv::Mat& frame){
                     cv::rectangle(
                     frame,
                     cv::Point(x, y),
-                    cv::Point(x - BOXLENGTH, y - BOXLENGTH),
+                    cv::Point(x + BOXLENGTH, y + BOXLENGTH),
                     cv::Scalar(255, 255, 0)//blue
                     );
                 }

@@ -96,6 +96,7 @@ int Slotmanager::update(){
     cv::Mat frame;
     if(this->capture(frame) != 0){return -1;}
     
+    //If the track has been learnt then then can be analysed.
     if(!this->computerCar->getCarDetector()->hasLearnt()){
         int move = this->computerCar->getCarDetector()->learn(frame, this->keyPress, this->getMouseClick());
         if(move == 1){

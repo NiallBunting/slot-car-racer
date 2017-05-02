@@ -49,6 +49,7 @@ int Serialcommunicator::addCar(Car* c){
     return 0;
 }
 
+//The main loop of the serial communicator.
 int Serialcommunicator::update(){
     
     for(;;){        
@@ -85,6 +86,8 @@ int Serialcommunicator::update(){
     return 0;
 }
 
+//Sends the data to the arduino.
+//Takes a car id and a string to send.
 int Serialcommunicator::sendData(char id, std::string str){
     //Create message
     std::string carIdChar(1, id);
@@ -130,12 +133,7 @@ int Serialcommunicator::parseBuffer(std::string str){
 
         //check if have a full message
         if(start != -1 && end != -1){
-            
-            for(int i = start; i < end; i++){
-                std::cout << str.at(i);
-            }
-            std::cout<< std::endl;
-            
+                        
             //If the car is detected off the track
             if(str.at(start + 2) == 'N'){
                 this->cars[cars]->offTrack();
@@ -143,6 +141,10 @@ int Serialcommunicator::parseBuffer(std::string str){
 
             //On completion of the track
             if(str.at(start + 2) == 'G'){
+                for(int i = start; i < end; i++){
+                std::cout << str.at(i);
+                }
+                std::cout<< std::endl;
                 this->cars[cars]->gatePassed();
             }
         }
